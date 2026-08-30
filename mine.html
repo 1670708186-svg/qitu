@@ -58,9 +58,7 @@
         .ev-future .ev-type { color: #e9e6f6; background: rgba(184,174,232,.32); border-color: rgba(124,107,214,.4); }
         .no-data { text-align: center; padding: 3.5rem 1rem; color: var(--text-dim); }
         .no-data a { color: var(--lavender); }
-        .no-data .orb { width: 48px; height: 48px; margin: 0 auto 0.9rem; border-radius: 50%;
-            background: radial-gradient(circle, rgba(184,174,232,.5) 0%, rgba(124,107,214,.2) 50%, transparent 78%);
-            box-shadow: 0 0 24px rgba(124,107,214,.35); animation: bob 3s ease-in-out infinite; }
+        .no-data .empty-orb { display: block; width: 180px; height: 180px; margin: 0 auto 0.9rem; border-radius: 50%; }
         @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     </style>
     <style>
@@ -157,7 +155,7 @@
                     <svg id="yearChart" class="line-chart" viewBox="0 0 720 300"></svg>
                 </div>
                 <div class="legend" id="yearLegend"></div>
-                <div class="chart-tip">● S级=柔金光晕 · A级=粉橙 · B级=青蓝 · C级=低透明灰　节点为当年矿种信号</div>
+                <div class="chart-tip">● 年度评分 = 喜用神状态(40) + 财官引动(40) + 结构爆发(20)　节点为当年矿种信号</div>
             </div>
             <div class="pick-card" id="pickCard"></div>   <!-- 新增：年度精选 -->
             <div id="recentCard"></div>            <!-- 原有：近年关键节点 -->
@@ -190,6 +188,7 @@
 
     <script src="js/starfield.js?v=2"></script>
     <script src="js/spirit.js?v=2"></script>
+    <script src="js/opening.js?v=2"></script>
     <script src="js/auth.js?v=1"></script>
     <script>
     /* ===== 原有模块渲染（评分环 / 大运时间轴 / 关键节点 / 升职窗口 / 半仙注解） ===== */
@@ -210,9 +209,15 @@
         }
         var d = loadReport();
         if (!d) {
-            document.getElementById('scoreCard').innerHTML = '<div class="no-data"><div class="orb glow-orb" data-c1="#b8aee8" data-c2="#d9578a" data-n="8"></div>' +
+            document.getElementById('scoreCard').innerHTML = '<div class="no-data">' +
+                '<canvas id="emptyOrb" class="empty-orb" width="180" height="180"></canvas>' +
                 '<p>还没有报告数据，矿脉无法勘探</p>' +
                 '<p><a href="index.html">← 先测一次职场天赋</a></p></div>';
+            // 灵体效果（图1风格：蓝紫涟漪 + 中心柔光 + 环绕粒子）
+            var oc = document.getElementById('emptyOrb');
+            if (oc && window.SpiritOrb) {
+                setTimeout(function () { window.SpiritOrb.create(oc); }, 50);
+            }
             return;   // 无报告时原模块留空，新增矿脉地图展示示例数据
         }
 

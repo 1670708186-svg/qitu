@@ -106,6 +106,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 function showV2Entry() {
     const entry = document.getElementById('v2Entry');
     if (entry) entry.style.display = '';
+    // 本地自动保存：回填上次填写的生辰
+    if (window.AutoSave && entry) {
+        AutoSave.restore('qitu_form_v2', entry.querySelector('.v3-form'));
+    }
     // 隐藏报告骨架里的其他默认模块（等待生成后再渲染）
     const hero = document.querySelector('.report-header');
     if (hero) hero.style.display = 'none';

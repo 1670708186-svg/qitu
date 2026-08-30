@@ -210,16 +210,16 @@
 
     <!-- 发帖 overlay -->
     <div class="cm-composer" id="cmComposer">
-        <div class="cm-composer-panel">
+        <div class="cm-composer-panel" data-avs="qitu_post_draft">
             <div class="cm-cp-head">
                 <div class="cm-cp-title">发布</div>
                 <button class="cm-cp-close" id="cmClose">✕</button>
             </div>
             <div class="cm-cp-label">选择帖子类型</div>
-            <div class="cm-cp-types" id="cmTypes">
-                <div class="cm-cp-type" data-type="help"><span class="t">🎭</span>匿名求助</div>
-                <div class="cm-cp-type" data-type="mine"><span class="t">🏆</span>矿脉故事</div>
-                <div class="cm-cp-type on" data-type="talk"><span class="t">💬</span>经验交流</div>
+            <div class="cm-cp-types" id="cmTypes" data-avs-seg="type">
+                <div class="cm-cp-type" data-type="help" data-val="help"><span class="t">🎭</span>匿名求助</div>
+                <div class="cm-cp-type" data-type="mine" data-val="mine"><span class="t">🏆</span>矿脉故事</div>
+                <div class="cm-cp-type on" data-type="talk" data-val="talk"><span class="t">💬</span>经验交流</div>
             </div>
             <input class="cm-cp-input" id="cmTitle" placeholder="标题（选填）" maxlength="40">
             <textarea class="cm-cp-input" id="cmContent" placeholder="分享你的职业困惑 / 挖矿战绩 / 经验心得…（默认匿名发布）" maxlength="500"></textarea>
@@ -397,9 +397,17 @@
                 return;
             }
             $('cmComposer').classList.add('show');
-            $('cmTitle').value = '';
-            $('cmContent').value = '';
             $('cmErr').textContent = '';
+            // 本地草稿：有则回填，无则清空
+            var draft = window.AutoSave
+                ? AutoSave.restore('qitu_post_draft', $('cmComposer').querySelector('.cm-composer-panel'))
+                : null;
+            if (!draft) {
+                $('cmTitle').value = '';
+                $('cmContent').value = '';
+            } else if (draft.type) {
+                pubType = draft.type;
+            }
             updateSummaryPreview();
         }
         $('cmPub').addEventListener('click', openComposer);
@@ -482,6 +490,7 @@
                     saveMeta(pid, { type: pubType, title: title });
                     $('cmComposer').classList.remove('show');
                     toast('发布成功 ✨');
+                    if (window.AutoSave) AutoSave.clear('qitu_post_draft');
                     loadPosts();
                 } else {
                     $('cmErr').textContent = d.detail || '发布失败';
@@ -504,6 +513,7 @@
     })();
     </script>
     <script src="js/glow-orb.js?v=1"></script>
+    <script src="js/autosave.js?v=1"></script>
     <script src="js/tabbar.js?v=3"></script>
 </body>
 </html>

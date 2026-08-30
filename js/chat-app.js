@@ -783,6 +783,23 @@
     }
   }
 
+  /* 外接 AI 配置输入自动保存（输入即存，防抖） */
+  function autoSaveExt() {
+    setExt({
+      enabled: $('extSwitch').classList.contains('on'),
+      base: $('extBase').value.trim(),
+      key: $('extKey').value.trim(),
+      model: $('extModel').value.trim() || 'deepseek-chat'
+    });
+  }
+  ['extBase', 'extKey', 'extModel'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('input', function () {
+      clearTimeout(window.__extSaveT);
+      window.__extSaveT = setTimeout(autoSaveExt, 500);
+    });
+  });
+
   /* ============ 初始化 ============ */
   function init() {
     reportId = sessionStorage.getItem('currentReportId');

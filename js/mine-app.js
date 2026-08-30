@@ -14,10 +14,35 @@
   var profile = 'me';   // 当前视角：me / li / wang
   var nowYear = new Date().getFullYear();
 
-  var GRADE_COLOR = { S: '#e9c46a', A: '#ff9db8', B: '#8ba8d8', C: 'rgba(255,255,255,.30)' };
-  var GRADE_SCORE = { S: 95, A: 85, B: 76, C: 63 };
-  var GRADE_EMOJI = { S: '👑', A: '💰', B: '📈', C: '🧘' };
+  var GRADE_DEF = {
+    S: { fill: 'url(#gradS)', stroke: '#e9c46a', em: '👑', tag: '👑 天命转折 / 💰 暴富机遇', tip: 'S级 80-100', glow: 'rgba(233,196,106,.85)' },
+    A: { fill: 'url(#gradA)', stroke: '#ff9db8', em: '📈', tag: '📈 事业升迁 / 💵 财源广进', tip: 'A级 60-79', glow: 'rgba(255,157,184,.65)' },
+    B: { fill: 'url(#gradB)', stroke: '#8ba8d8', em: '🌱', tag: '🌱 平稳积蓄', tip: 'B级 40-59', glow: 'rgba(139,168,216,.55)' },
+    C: { fill: 'url(#gradC)', stroke: 'rgba(255,255,255,.30)', em: '🧘', tag: '🧘 韬光养晦', tip: 'C级 <40', glow: 'rgba(255,255,255,.15)' }
+  };
   var GRADE_WORD = { S: 'S级 · 天命转折', A: 'A级 · 黄金窗口', B: 'B级 · 平稳中藏机', C: 'C级 · 蓄力之年' };
+  // 由分数反推等级
+  function gradeForScore(s) { return s >= 80 ? 'S' : s >= 60 ? 'A' : s >= 40 ? 'B' : 'C'; }
+  // 年度淘金评分 = 喜用神状态(40) + 财官引动(40) + 结构爆发(20)
+  function yearScore(ev, y) {
+    var yongshen, caiguan, baofa;
+    var t = ev ? ((ev.type || '') + (ev.title || '')) : '';
+    if (ev) {
+      yongshen = /喜神|用神|大运|贵人|食神|正印|偏印/.test(t) ? 35
+                : /忌神|破格|劫煞|七杀|伤官|枭神/.test(t) ? 14 : 24;
+      caiguan  = /财|官|升|职|薪|库|贵人|offer|加薪|正财|偏财|正官|七杀/.test(t) ? 34
+                : /学|学|习|转|换|平台|资源|努力|踏实|稳|修/.test(t) ? 20 : 26;
+      baofa    = /转折|天命|财库|爆发|巅峰|大运|重组|跃迁|新局|高光|突破/.test(t) ? 18
+                : /贵人|升职|晋升|窗口|offer|加薪|新机|启动|合作|扩张/.test(t) ? 14
+                : /平稳|学习|蓄力|积累|沉淀|沉淀|修整|缓步|低调/.test(t) ? 6 : 10;
+    } else {
+      yongshen = 22 + Math.floor(stable('s' + y, y) * 12);
+      caiguan  = 22 + Math.floor(stable('s' + y, y + 100) * 12);
+      baofa    = 8  + Math.floor(stable('s' + y, y + 200) * 8);
+    }
+    var total = yongshen + caiguan + baofa;
+    return Math.max(0, Math.min(100, total));
+  }
   var JUDGE = {
     S: '掐指一算，这一年你财库大开，是十年一遇的天命转折。别贪多，认准主线，重仓自己的禀赋。',
     A: '这一年你运势上扬，贵人暗助，适合主动推进关键动作——该出手时就出手。',
@@ -69,7 +94,7 @@
       var events = ((reportData.analysis && reportData.analysis.special_events) || {}).events || [];
       return events.map(function (e) {
         var g = gradeFor(e);
-        return { year: e.year, grade: g, emoji: GRADE_EMOJI[g], title: e.title || GRADE_WORD[g], desc: e.desc || JUDGE[g], ev: e };
+        return { year: e.year, grade: g, emoji: GRADE_DEF[g].em, title: e.title || GRADE_WORD[g], desc: e.desc || JUDGE[g], ev: e };
       });
     }
     // 演示数据（me 无报告 / li / wang）
@@ -80,8 +105,7 @@
       var g;
       if (r > 0.93) g = 'S'; else if (r > 0.75) g = 'A'; else if (r > 0.5) g = 'B'; else g = 'C';
       if (y === nowYear - 1) g = 'C';
-      var em = GRADE_EMOJI[g];
-      if (g === 'B' && r > 0.62) em = '📈';
+      var em = GRADE_DEF[g].em;
       list.push({ year: y, grade: g, emoji: em, title: GRADE_WORD[g], desc: JUDGE[g], demo: true });
     }
     // 至少给 1-2 个亮点年
@@ -107,13 +131,9 @@
     var years = [];
     for (var y = nowYear - 1; y <= nowYear + 6; y++) {
       var ev = byYear[y];
-      var score;
-      if (ev) {
-        score = GRADE_SCORE[ev.grade] + Math.floor(stable('s' + y, y) * 6);
-      } else {
-        score = 68 + Math.floor(stable('f' + y, y) * 14);
-      }
-      years.push({ year: y, score: score, ev: ev, smooth: !ev });
+      var score = yearScore(ev, y);
+      // 评分三段制：喜用神 40 + 财官引动 40 + 结构爆发 20 = 100
+      years.push({ year: y, score: score, ev: ev, smooth: !ev, grade: gradeForScore(score) });
     }
     return years;
   }
@@ -130,9 +150,17 @@
     function X(i) { return padL + i * step; }
     function Y(v) { return padT + plotH - ((v - yMin) / (yMax - yMin)) * plotH; }
 
-    var g = '<defs><linearGradient id="mineGrad" x1="0" y1="0" x2="1" y2="0">' +
-      '<stop offset="0%" stop-color="#e9c46a"/><stop offset="55%" stop-color="#d9578a"/><stop offset="100%" stop-color="#7c6bd6"/>' +
-      '</linearGradient></defs>';
+    var g = '<defs>' +
+      '<linearGradient id="mineGrad" x1="0" y1="0" x2="1" y2="0">' +
+        '<stop offset="0%" stop-color="#e9c46a"/><stop offset="55%" stop-color="#d9578a"/><stop offset="100%" stop-color="#7c6bd6"/>' +
+      '</linearGradient>' +
+      // 节点径向渐变：柔金 / 粉橙 / 青蓝 / 低透明灰
+      '<radialGradient id="gradS" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff3b0" stop-opacity="1"/><stop offset="60%" stop-color="#e9c46a" stop-opacity=".95"/><stop offset="100%" stop-color="#7a5a20" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="gradA" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#ffd0e0" stop-opacity="1"/><stop offset="60%" stop-color="#ff9db8" stop-opacity=".92"/><stop offset="100%" stop-color="#7a2f4a" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="gradB" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#cfe0f5" stop-opacity="1"/><stop offset="60%" stop-color="#8ba8d8" stop-opacity=".9"/><stop offset="100%" stop-color="#1e3a5c" stop-opacity="0"/></radialGradient>' +
+      '<radialGradient id="gradC" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="rgba(255,255,255,.55)"/><stop offset="60%" stop-color="rgba(255,255,255,.30)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient>' +
+      '<linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c6bd6"/><stop offset="100%" stop-color="#7c6bd6" stop-opacity="0"/></linearGradient>' +
+      '</defs>';
 
     // 网格 + 纵轴
     g += '<g stroke="rgba(255,255,255,.06)" stroke-width="1">';
@@ -148,20 +176,22 @@
     g += '<path d="' + smoothPath(pts) + '" fill="none" stroke="url(#mineGrad)" stroke-width="2.2" stroke-linecap="round" opacity=".85"/>';
     // 面积渐变
     g += '<path d="' + smoothPath(pts) + ' L' + (W - padR) + ' ' + (padT + plotH) + ' L' + padL + ' ' + (padT + plotH) + ' Z" fill="url(#areaGrad)" opacity=".18" stroke="none"/>';
-    g += '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7c6bd6"/><stop offset="100%" stop-color="#7c6bd6" stop-opacity="0"/></linearGradient></defs>';
 
-    // 节点 + emoji + 年份
+    // 节点 + emoji + 年份 + 等级标签
     series.forEach(function (s, i) {
       var x = X(i), y = Y(s.score);
-      var grade = s.ev ? s.ev.grade : 'C';
-      var color = s.ev ? GRADE_COLOR[grade] : 'rgba(255,255,255,.35)';
-      var r = grade === 'S' ? 7 : (grade === 'A' ? 6 : 5);
-      var glow = grade === 'S' ? ' style="filter:drop-shadow(0 0 8px rgba(233,196,106,.8))"' : (grade === 'A' ? ' style="filter:drop-shadow(0 0 6px rgba(255,157,184,.6))"' : '');
-      var em = s.ev ? s.ev.emoji : '·';
-      g += '<g class="y-node" data-year="' + s.year + '" style="cursor:pointer">' +
-        '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 6) + '" fill="transparent"/>' +
-        '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="' + color + '" stroke="rgba(255,255,255,.25)" stroke-width="1"' + glow + '/>' +
-        '<text x="' + x + '" y="' + (y - 13) + '" text-anchor="middle" font-size="15">' + em + '</text>' +
+      var grade = s.grade;
+      var def = GRADE_DEF[grade];
+      var r = grade === 'S' ? 7.5 : (grade === 'A' ? 6.5 : (grade === 'B' ? 5.5 : 4.5));
+      var em = def.em;
+      var tag = grade === 'S' ? '天命转折' : grade === 'A' ? '事业升迁' : grade === 'B' ? '平稳积蓄' : '韬光养晦';
+      var labelColor = grade === 'S' ? '#e9c46a' : grade === 'A' ? '#ff9db8' : grade === 'B' ? '#8ba8d8' : 'rgba(255,255,255,.4)';
+      g += '<g class="y-node" data-year="' + s.year + '" data-grade="' + grade + '" style="cursor:pointer">' +
+        '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 8) + '" fill="transparent"/>' +
+        '<circle cx="' + x + '" cy="' + y + '" r="' + (r + 4) + '" fill="' + def.fill + '" style="filter:drop-shadow(0 0 6px ' + def.glow + ')"/>' +
+        '<circle cx="' + x + '" cy="' + y + '" r="' + r + '" fill="none" stroke="' + def.stroke + '" stroke-width="0.8" opacity=".7"/>' +
+        '<text x="' + x + '" y="' + (y - 12) + '" text-anchor="middle" font-size="14">' + em + '</text>' +
+        '<text x="' + x + '" y="' + (y + 18) + '" text-anchor="middle" font-size="9" fill="' + labelColor + '">' + tag + '</text>' +
         '<text x="' + x + '" y="' + (padT + plotH + 22) + '" text-anchor="middle" font-size="11" fill="' + (s.year === nowYear ? '#e9e6f6' : 'rgba(255,255,255,.42)') + '">' + s.year + '</text>' +
         '</g>';
     });
@@ -170,9 +200,10 @@
     yearChart.style.width = W + 'px';
     yearScroll.scrollLeft = Math.max(0, (series.findIndex(function (s) { return s.year === nowYear; }) - 2) * step);
 
-    // 图例
-    $('yearLegend').innerHTML = Object.keys(GRADE_COLOR).map(function (k) {
-      return '<span class="lg"><i style="background:' + GRADE_COLOR[k] + '"></i>' + k + '级</span>';
+    // 图例：S/A/B/C 等级 + 标签
+    $('yearLegend').innerHTML = ['S', 'A', 'B', 'C'].map(function (k) {
+      var d = GRADE_DEF[k];
+      return '<span class="lg"><i style="background:' + d.stroke + ';box-shadow:0 0 6px ' + d.glow + '"></i>' + d.tag + '</span>';
     }).join('');
 
     bindYearNodes(series);
@@ -216,8 +247,8 @@
     var box = $('pickCard');
     var future = series.filter(function (s) { return s.ev && s.year >= nowYear; });
     var best = future.length
-      ? future.slice().sort(function (a, b) { return GRADE_SCORE[b.ev.grade] - GRADE_SCORE[a.ev.grade]; })[0]
-      : (series.filter(function (s) { return s.ev; }).slice().sort(function (a, b) { return GRADE_SCORE[b.ev.grade] - GRADE_SCORE[a.ev.grade]; })[0]);
+      ? future.slice().sort(function (a, b) { return b.score - a.score; })[0]
+      : (series.filter(function (s) { return s.ev; }).slice().sort(function (a, b) { return b.score - a.score; })[0]);
     if (!best || !best.ev) {
       box.innerHTML = '<div class="pc-hd"><span class="pc-emoji">🔮</span><span class="pc-year">矿脉未明</span></div>' +
         '<div class="pc-quote">还没有足够的命盘数据绘制矿脉。先测一份职场天赋报告，我就能告诉你矿藏在哪几年。</div>';

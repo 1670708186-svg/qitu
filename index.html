@@ -55,19 +55,19 @@
             <p class="sub">溯禀赋之源，启职业之途<br>AI 命理职业导航 · 王半仙为你掌舵</p>
         </div>
 
-        <form class="v3-form" id="v3Form" onsubmit="return false;">
+        <form class="v3-form" id="v3Form" onsubmit="return false;" data-avs="qitu_form_v3">
             <div class="v3-section-title">称呼</div>
             <div class="v3-hint">选填 · 我们怎么称呼你</div>
             <input type="text" class="form-input" id="fName" placeholder="怎么称呼你" maxlength="12" autocomplete="off">
 
             <div class="v3-section-title" style="margin-top:1rem">性别</div>
-            <div class="seg" id="fGender">
+            <div class="seg" id="fGender" data-avs-seg="gender">
                 <button type="button" class="seg-btn active" data-val="1">♂ 男</button>
                 <button type="button" class="seg-btn" data-val="0">♀ 女</button>
             </div>
 
             <div class="v3-section-title" style="margin-top:1rem">历法类型</div>
-            <div class="seg" id="fCal">
+            <div class="seg" id="fCal" data-avs-seg="cal">
                 <button type="button" class="seg-btn active" data-val="solar">公历（阳历）</button>
                 <button type="button" class="seg-btn" data-val="lunar">农历（阴历）</button>
             </div>
@@ -130,6 +130,7 @@
     <script src="js/config.js?v=1"></script>
     <script src="js/auth.js?v=1"></script>
     <script src="js/glow-orb.js?v=1"></script>
+    <script src="js/autosave.js?v=1"></script>
     <script src="js/tabbar.js?v=1"></script>
     <script>
     (function () {
@@ -264,6 +265,13 @@
             rebuildDays();
             $('fYear').addEventListener('change', rebuildDays);
             $('fMonth').addEventListener('change', rebuildDays);
+            // 本地自动保存：回填上次填写（下拉重建后执行）
+            if (window.AutoSave) {
+                AutoSave.restore('qitu_form_v3', $('v3Form'));
+                rebuildDays();
+                var c = $('fCity').value.trim();
+                if (c) $('fCity').dispatchEvent(new Event('input'));
+            }
         }
 
         function rebuildDays() {
@@ -329,6 +337,7 @@
             $('fHour').value = 11;
             $('fCity').value = '成都';
             $('fCity').dispatchEvent(new Event('input'));
+            if (window.AutoSave) AutoSave.save('qitu_form_v3', $('v3Form'));
             toast('已填入示例生辰，可直接开始溯源');
         });
 

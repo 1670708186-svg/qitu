@@ -976,7 +976,7 @@
                     <h2 style="font-size:1.4rem;font-weight:300;letter-spacing:3px;color:rgba(255,255,255,.9)">测测你的职场天赋</h2>
                     <p style="font-size:0.84rem;color:var(--text-dim);margin-top:0.4rem">30 秒输入生辰，解锁你的天赋适配度</p>
                 </div>
-                <div class="v3-form" style="text-align:left;margin-top:0.6rem">
+                <div class="v3-form" style="text-align:left;margin-top:0.6rem" data-avs="qitu_form_v2">
                     <div class="v3-date-row" style="grid-template-columns:1fr 1fr 1fr;gap:0.5rem">
                         <input type="number" class="form-input" id="v2Year" placeholder="年" min="1900" max="2030" value="1995" style="text-align:center">
                         <input type="number" class="form-input" id="v2Month" placeholder="月" min="1" max="12" value="6" style="text-align:center">
@@ -992,9 +992,9 @@
                             <option value="15">申时 15-17点</option><option value="17">酉时 17-19点</option>
                             <option value="19">戌时 19-21点</option><option value="21">亥时 21-23点</option>
                         </select>
-                        <div class="seg" style="gap:0.45rem">
-                            <button type="button" class="seg-btn active" data-g="1" onclick="v2PickGender(this)">♂ 男</button>
-                            <button type="button" class="seg-btn" data-g="0" onclick="v2PickGender(this)">♀ 女</button>
+                        <div class="seg" style="gap:0.45rem" data-avs-seg="gender">
+                            <button type="button" class="seg-btn v2e-g active" data-g="1" onclick="v2PickGender(this)">♂ 男</button>
+                            <button type="button" class="seg-btn v2e-g" data-g="0" onclick="v2PickGender(this)">♀ 女</button>
                         </div>
                     </div>
                     <button class="btn-primary" id="v2SubmitBtn" onclick="v2GenerateReport()" style="margin-top:0.8rem">开 启 分 析</button>
@@ -1014,7 +1014,8 @@
     <script src="js/starfield.js?v=2"></script>
     <script src="js/spirit.js?v=2"></script>
     <script src="js/auth.js?v=1"></script>
-    <script src="js/report.js?v=3"></script>
+    <script src="js/report.js?v=4"></script>
+    <script src="js/autosave.js?v=1"></script>
     <script src="js/tabbar.js?v=3"></script>
     <script>
         /* 报告加载后：填充锚点导航（章节锚点跟随渲染的卡片标题） */
