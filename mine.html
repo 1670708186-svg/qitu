@@ -139,6 +139,53 @@
         .switch-opt .nm { font-size: 0.86rem; color: var(--text-main); letter-spacing: 1px; }
         .switch-opt .ds { font-size: 0.62rem; color: var(--text-hint); margin-top: 0.14rem; }
         .switch-opt .cur { font-size: 0.62rem; color: #e9c46a; border: 1px solid rgba(233,196,106,.45); border-radius: 999px; padding: 1px 8px; }
+
+        /* ═══════ 我的命盘档案（bazi-archive.js） ═══════ */
+        .bz-entry { cursor: pointer; transition: border-color .25s; }
+        .bz-entry:hover { border-color: rgba(233,196,106,.5); }
+        .bz-entry-hd { display: flex; align-items: center; gap: 0.7rem; }
+        .bz-entry-ic { font-size: 1.5rem; filter: drop-shadow(0 0 8px rgba(233,196,106,.5)); }
+        .bz-entry-info { flex: 1; min-width: 0; }
+        .bz-entry-title { font-size: 0.95rem; color: #f2f0f7; letter-spacing: 2px; }
+        .bz-entry-sub { font-size: 0.7rem; color: var(--text-dim); margin-top: 0.22rem; letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .bz-entry-ar { color: #e9c46a; font-size: 1rem; }
+        .bz-arch-hd { margin-bottom: 0.5rem; }
+        .bz-arch-title { font-size: 1rem; color: #f2f0f7; letter-spacing: 2px; }
+        .bz-arch-sub { font-size: 0.72rem; color: var(--text-dim); margin-top: 0.3rem; letter-spacing: .5px; }
+        .bz-card { margin-top: 0.5rem; border: 1px solid rgba(255,255,255,.1); border-radius: 16px; background: rgba(255,255,255,.03); overflow: hidden; }
+        .bz-card summary { display: flex; align-items: center; gap: 0.55rem; padding: 0.85rem 1rem; cursor: pointer; list-style: none;
+            font-size: 0.85rem; color: #e9e6f6; letter-spacing: 1px; user-select: none; }
+        .bz-card summary::-webkit-details-marker { display: none; }
+        .bz-card summary::after { content: '▾'; margin-left: auto; color: rgba(255,255,255,.4); transition: transform .25s; }
+        .bz-card[open] summary::after { transform: rotate(180deg); }
+        .bz-card summary .bz-card-ic { font-size: 1.05rem; }
+        .bz-card-body { padding: 0.2rem 1rem 1rem; }
+        .bz-4 { display: grid; grid-template-columns: 52px repeat(4, 1fr); gap: 4px; margin-bottom: 4px; align-items: center; }
+        .bz-4 .bz-c { text-align: center; font-size: 0.74rem; padding: 3px 0; border-radius: 6px; }
+        .bz-4 .bz-th { color: var(--text-dim); text-align: left; font-size: 0.66rem; }
+        .bz-4 .bz-name { color: #b8aee8; font-size: 0.7rem; }
+        .bz-4 .bz-gan { font-size: 1rem; color: #f2f0f7; }
+        .bz-4 .bz-zhi { font-size: 1rem; color: #f2f0f7; }
+        .bz-4 .bz-hide, .bz-4 .bz-naying, .bz-4 .bz-sg { font-size: 0.62rem; color: rgba(255,255,255,.55); }
+        .wx-木 { color: #8fd08f; } .wx-火 { color: #ff9db8; } .wx-土 { color: #d9c68a; }
+        .wx-金 { color: #e9e6f6; } .wx-水 { color: #8fb8e8; }
+        .bz-wx-row { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.4rem; }
+        .bz-wx-k { width: 1.2rem; font-size: 0.8rem; color: #f2f0f7; }
+        .bz-wx-bar { flex: 1; height: 8px; border-radius: 999px; background: rgba(255,255,255,.06); overflow: hidden; }
+        .bz-wx-bar i { display: block; height: 100%; border-radius: 999px; opacity: .85; }
+        .bz-wx-bar i.wx-木 { background: #8fd08f; } .bz-wx-bar i.wx-火 { background: #ff9db8; }
+        .bz-wx-bar i.wx-土 { background: #d9c68a; } .bz-wx-bar i.wx-金 { background: #e9e6f6; }
+        .bz-wx-bar i.wx-水 { background: #8fb8e8; }
+        .bz-wx-v { width: 2.6rem; text-align: right; font-size: 0.7rem; color: var(--text-dim); }
+        .bz-line { font-size: 0.72rem; color: var(--text-dim); line-height: 1.8; margin-top: 0.55rem; letter-spacing: .5px; }
+        .bz-grid { display: flex; gap: 0.6rem; align-items: baseline; margin-bottom: 0.35rem; }
+        .bz-gk { font-size: 0.7rem; color: var(--text-dim); width: 3rem; flex-shrink: 0; }
+        .bz-gv { font-size: 0.82rem; color: #f2f0f7; letter-spacing: 1px; }
+        .bz-ss { display: flex; align-items: baseline; gap: 0.5rem; font-size: 0.76rem; margin-bottom: 0.4rem; line-height: 1.6; }
+        .bz-ss-i { flex-shrink: 0; }
+        .bz-ss-n { color: #e9c46a; letter-spacing: .5px; flex-shrink: 0; }
+        .bz-ss-d { color: var(--text-dim); font-size: 0.68rem; }
+        .bz-empty { font-size: 0.74rem; color: var(--text-dim); padding: 0.4rem 0; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -161,6 +208,8 @@
 
         <!-- ═══ 年度视图（原有模块 + 新增地图） ═══ -->
         <div id="yearView">
+            <div id="baziEntryCard"></div>        <!-- 新增：我的命盘档案 入口 -->
+            <div id="baziArchive" style="display:none"></div>  <!-- 新增：完整命盘档案 -->
             <div id="scoreCard"></div>            <!-- 原有：年度淘金评分 -->
             <div id="timelineCard"></div>         <!-- 原有：大运时间轴 -->
             <div class="card chart-card">
@@ -223,6 +272,8 @@
             return data;
         }
         var d = loadReport();
+        // 我的命盘档案（启途 P0）
+        if (window.BaziArchive) BaziArchive.init();
         if (!d) {
             document.getElementById('scoreCard').innerHTML = '<div class="no-data">' +
                 '<canvas id="emptyOrb" class="empty-orb" width="180" height="180"></canvas>' +
@@ -326,6 +377,7 @@
     </script>
     <script src="js/mine-app.js?v=1"></script>
     <script src="js/glow-orb.js?v=1"></script>
+    <script src="js/bazi-archive.js?v=1"></script>
     <script src="js/tabbar.js?v=6"></script>
 </body>
 </html>
