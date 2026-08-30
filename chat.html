@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>王半仙 · 对话</title>
+    <link rel="stylesheet" href="css/spirit.css?v=6">
+    <link rel="stylesheet" href="css/starla.css?v=6">
+    <link rel="stylesheet" href="css/chat.css?v=1">
+    <meta name="theme-color" content="#0d0f16">
+    <script src="js/config.js?v=6"></script>
+    <style>
+        /* chat 页强制纯色底色，去掉全局弥散光晕与星空下层，让文字清晰 */
+        body { background: #0d0f16 !important; background-image: none !important; }
+        .spirit-glow { display: none; }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="spirit-glow"></div>
+    <canvas id="spirit-canvas"></canvas>
+
+    <div class="chat-shell">
+        <!-- ══════════ 视图 A · 会话列表 ══════════ -->
+        <div id="listView">
+            <div class="cl-head">
+                <div class="t">半 仙</div>
+                <span class="edit" id="editBtn">编辑</span>
+            </div>
+            <div class="cl-search">
+                <span class="ic">🔍</span>
+                <input id="searchInput" type="text" placeholder="搜索对话..." maxlength="30">
+            </div>
+            <div class="cl-list" id="convoList"></div>
+            <button class="cl-new" id="newConvoBtn">＋ 新对话</button>
+        </div>
+
+        <!-- 编辑批量删除栏 -->
+        <div class="cl-batch" id="batchBar">
+            <span class="cnt" id="batchCnt">已选 0 项</span>
+            <button class="do" id="batchDel">删除所选</button>
+        </div>
+
+        <!-- ══════════ 视图 B · 对话房间（顶部灵体 + 下半对话框） ══════════ -->
+        <div id="roomView">
+            <div class="room-top">
+                <div class="room-spark" id="roomOrb"></div>
+                <div class="rm-name" id="roomName">王半仙</div>
+                <div class="rm-status" id="roomStatus"><span class="dot"></span>在线 · 随缘回复</div>
+                <div class="room-bar">
+                    <a class="bk" id="roomBack" href="javascript:void(0)">◀</a>
+                    <span class="tt" id="roomTitle">王半仙</span>
+                    <button class="tts" id="ttsBtn">🔊 播报</button>
+                    <button class="tts" id="extBtn" title="外接 AI 接口设置">⚙️</button>
+                </div>
+            </div>
+            <div class="room-nav" id="roomNav"></div>
+            <div class="room-msgs" id="roomMsgs"></div>
+            <div class="room-quick" id="roomQuick"></div>
+            <div class="mode-bar">
+                <span class="mb-lb">讲解模式</span>
+                <div class="mode-seg" id="modeSeg">
+                    <button class="m-btn active" data-mode="normal">普通讲解</button>
+                    <button class="m-btn" data-mode="pro">专业讲解</button>
+                </div>
+            </div>
+            <div class="room-input">
+                <button class="vbtn" id="voiceBtn" title="语音输入">🎤</button>
+                <input id="msgInput" type="text" maxlength="300" placeholder="💬 输入消息...">
+                <button class="sbtn" id="sendBtn">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新对话弹层 -->
+    <div class="newc-mask" id="newcMask" onclick="if(event.target===this)ChatApp.closeNewc()">
+        <div class="newc-sheet">
+            <div class="newc-hd">开启新对话</div>
+            <div class="newc-opt" onclick="ChatApp.newChat('ai')">
+                <div class="ic glow-orb" data-c1="#b8aee8" data-c2="#d9578a">🔮</div>
+                <div class="tx"><div class="nm">找王半仙聊</div><div class="ds">AI 参谋 · 结合你的命盘作答</div></div>
+                <span style="color:var(--text-hint)">→</span>
+            </div>
+            <div class="newc-opt" onclick="ChatApp.newChat('mentor')">
+                <div class="ic glow-orb" data-c1="#e9c46a" data-c2="#d9578a">🧘</div>
+                <div class="tx"><div class="nm">找真人导师</div><div class="ds">命理导师 · 职业规划师</div></div>
+                <span style="color:var(--text-hint)">→</span>
+            </div>
+            <div class="newc-opt" onclick="ChatApp.newChat('user')">
+                <div class="ic glow-orb" data-c1="#8ba8d8" data-c2="#b8aee8">👥</div>
+                <div class="tx"><div class="nm">与社区用户交流</div><div class="ds">匿名畅聊 · 挖矿心得</div></div>
+                <span style="color:var(--text-hint)">→</span>
+            </div>
+            <button class="newc-cancel" onclick="ChatApp.closeNewc()">取 消</button>
+        </div>
+    </div>
+
+    <!-- 外接 AI 接口设置弹层 -->
+    <div class="ext-mask" id="extMask" onclick="if(event.target===this)ChatApp.closeExt()">
+        <div class="ext-sheet">
+            <div class="ext-hd">🧿 外接 AI 接口</div>
+            <div class="ext-desc">配置后，与王半仙的对话改由你自己的模型回答（兼容 OpenAI 格式 /chat/completions 接口）</div>
+            <div class="ext-row">
+                <span class="ext-lb">启用外接 AI</span>
+                <span class="ext-sw" id="extSwitch"><span class="knob"></span></span>
+            </div>
+            <div class="ext-field"><label>接口地址</label><input id="extBase" type="text" placeholder="https://api.deepseek.com/v1"></div>
+            <div class="ext-field"><label>API Key</label><input id="extKey" type="password" placeholder="sk-..."></div>
+            <div class="ext-field"><label>模型名</label><input id="extModel" type="text" placeholder="deepseek-chat"></div>
+            <div class="ext-tip">⚠️ 需该接口服务端允许浏览器跨域（CORS），部分平台需自建代理；接口不可用时自动回退内置王半仙。Key 仅保存在本机浏览器，不会上传。</div>
+            <div class="ext-actions">
+                <button class="save" id="extSave">保 存</button>
+                <button class="cancel" id="extCancel">取 消</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastBox" style="position:fixed;left:50%;bottom:6rem;transform:translateX(-50%);z-index:999;background:rgba(18,18,28,.92);border:1px solid rgba(217,87,138,.45);border-radius:999px;padding:0.5rem 1.1rem;font-size:0.75rem;color:#f2f0f7;letter-spacing:1px;opacity:0;pointer-events:none;transition:opacity .3s;max-width:80vw;text-align:center;"></div>
+
+    <script src="js/starfield.js?v=6"></script>
+    <script src="js/spirit.js?v=6"></script>
+    <script src="js/auth.js?v=1"></script>
+    <script src="js/chat-voice.js?v=1"></script>
+    <script src="js/chat-app.js?v=1"></script>
+    <script src="js/glow-orb.js?v=1"></script>
+    <script src="js/tabbar.js?v=6"></script>
+</body>
+</html>

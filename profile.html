@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>我的 · 王半仙</title>
+    <link rel="stylesheet" href="css/spirit.css?v=2">
+    <link rel="stylesheet" href="css/starla.css?v=2">
+    <meta name="theme-color" content="#0d0f16">
+    <script src="js/config.js?v=2"></script>
+    <style>
+        /* ═══════ 我的 · 个人中心 ═══════ */
+        .p-head { padding: 1.1rem 0 0.9rem; text-align: center; position: relative; }
+        .p-login-btn {
+            position: absolute; right: 0.2rem; top: 1.2rem;
+            font-size: 0.68rem; color: var(--text-dim);
+            border: 1px solid rgba(255,255,255,.14); border-radius: 999px;
+            padding: 0.28rem 0.7rem; text-decoration: none; letter-spacing: 1px;
+            background: rgba(255,255,255,.04); transition: all .2s;
+        }
+        .p-login-btn:hover { border-color: rgba(217,87,138,.5); color: #ffb3cf; }
+
+        /* ── 个人信息卡（柔金渐变） ── */
+        .p-card {
+            border-radius: 24px; padding: 1.15rem 1.1rem; margin-bottom: 0.8rem;
+            background:
+                radial-gradient(60% 80% at 88% 8%, rgba(233,196,106,.14), transparent 60%),
+                radial-gradient(50% 70% at 6% 100%, rgba(217,87,138,.08), transparent 60%),
+                rgba(255,255,255,.045);
+            border: 1px solid rgba(233,196,106,.20);
+            display: flex; align-items: center; gap: 0.9rem;
+        }
+        .p-orb {
+            width: 64px; height: 64px; flex-shrink: 0; border-radius: 50%;
+            background: radial-gradient(circle, rgba(184,174,232,.5) 0%, rgba(124,107,214,.22) 45%, transparent 78%);
+            box-shadow: 0 0 26px rgba(184,174,232,.4);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; animation: pBob 3s ease-in-out infinite;
+        }
+        @keyframes pBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+        .p-info { flex: 1; min-width: 0; }
+        .p-nick { font-size: 1.15rem; font-weight: 300; letter-spacing: 3px; color: #f2f0f7; display: flex; align-items: center; gap: 0.4rem; }
+        .p-nick .vip { font-size: 0.6rem; color: #e9c46a; border: 1px solid rgba(233,196,106,.5); border-radius: 999px; padding: 1px 6px; letter-spacing: 1px; }
+        .p-meme { font-size: 0.74rem; color: var(--text-dim); margin-top: 0.3rem; letter-spacing: 1px; }
+        .p-meme b { color: #e9c46a; font-weight: 500; }
+        .p-gold { text-align: right; flex-shrink: 0; }
+        .p-gold .v { font-size: 1.35rem; font-weight: 300; color: #e9c46a; line-height: 1; text-shadow: 0 0 14px rgba(233,196,106,.35); }
+        .p-gold .k { font-size: 0.62rem; color: var(--text-hint); margin-top: 0.3rem; letter-spacing: 2px; }
+
+        /* ── 通用小节标题 ── */
+        .p-sec { display: flex; align-items: center; justify-content: space-between; margin: 1rem 0 0.55rem; }
+        .p-sec-t { font-size: 0.74rem; color: var(--text-dim); letter-spacing: 2px; }
+        .p-sec-more { font-size: 0.66rem; color: rgba(233,196,106,.7); text-decoration: none; letter-spacing: 1px; }
+
+        /* ── 成就荣誉墙 ── */
+        .ach-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        .ach-item {
+            text-align: center; padding: 0.7rem 0.2rem 0.6rem;
+            border-radius: 16px; position: relative;
+            background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+            transition: all .22s;
+        }
+        .ach-item.unlocked {
+            background: radial-gradient(70% 90% at 50% 0%, rgba(233,196,106,.13), rgba(255,255,255,.03));
+            border-color: rgba(233,196,106,.35);
+        }
+        .ach-item .em { font-size: 1.25rem; filter: grayscale(1) opacity(.45); }
+        .ach-item.unlocked .em { filter: none; text-shadow: 0 0 10px rgba(233,196,106,.5); }
+        .ach-item .nm { display: block; font-size: 0.6rem; color: var(--text-hint); margin-top: 0.28rem; letter-spacing: 1px; }
+        .ach-item.unlocked .nm { color: #e9c46a; }
+        .ach-item .lk { position: absolute; top: 0.3rem; right: 0.4rem; font-size: 0.55rem; color: rgba(255,255,255,.35); }
+
+        /* ── 我的咨询（状态胶囊） ── */
+        .con-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        .con-item { text-align: center; padding: 0.65rem 0.2rem; border-radius: 14px;
+            background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07); cursor: pointer; transition: all .2s; }
+        .con-item:active { transform: scale(.96); }
+        .con-item .n { font-size: 1.15rem; font-weight: 300; color: #f2f0f7; }
+        .con-item .n.hot { color: #e9c46a; }
+        .con-item .k { font-size: 0.6rem; color: var(--text-hint); margin-top: 0.2rem; letter-spacing: 1px; }
+
+        /* ── 报告列表 ── */
+        .rep-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.75rem 0.1rem;
+            border-bottom: 1px dashed rgba(255,255,255,.07); text-decoration: none; }
+        .rep-item:last-child { border-bottom: none; }
+        .rep-item .ic { font-size: 1.2rem; width: 2rem; text-align: center; flex-shrink: 0; }
+        .rep-item .info { flex: 1; min-width: 0; }
+        .rep-item .nm { font-size: 0.85rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rep-item .mt { font-size: 0.64rem; color: var(--text-hint); margin-top: 0.16rem; }
+        .rep-item .ar { color: var(--text-hint); font-size: 0.75rem; flex-shrink: 0; }
+
+        /* ── 灵体记忆 ── */
+        .mem-row { display: flex; gap: 0.5rem; }
+        .mem-cell { flex: 1; text-align: center; padding: 0.6rem 0.2rem; border-radius: 14px;
+            background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07); }
+        .mem-cell .n { font-size: 1.05rem; font-weight: 300; color: #b8aee8; }
+        .mem-cell .k { font-size: 0.58rem; color: var(--text-hint); margin-top: 0.18rem; letter-spacing: 1px; }
+        .mem-spark { width: 100%; height: 52px; margin-top: 0.6rem; display: block; }
+
+        /* ── 设置菜单 ── */
+        .menu-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.78rem 0.2rem;
+            border-bottom: 1px dashed rgba(255,255,255,.07); cursor: pointer; text-decoration: none; color: var(--text-main); }
+        .menu-item:last-child { border-bottom: none; }
+        .menu-item .ic { font-size: 1.05rem; width: 1.6rem; text-align: center; }
+        .menu-item .tx { flex: 1; font-size: 0.85rem; }
+        .menu-item .ds { font-size: 0.62rem; color: var(--text-hint); margin-right: 0.3rem; }
+        .menu-item .ar { color: var(--text-hint); font-size: 0.75rem; }
+        .menu-item:hover { opacity: .85; }
+
+        /* ── 关于弹窗 ── */
+        .about-mask { position: fixed; inset: 0; z-index: 220; display: flex; align-items: center; justify-content: center;
+            background: rgba(5,6,10,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            opacity: 0; pointer-events: none; transition: opacity .3s; }
+        .about-mask.show { opacity: 1; pointer-events: auto; }
+        .about-box { width: min(84vw, 340px); background: rgba(18,18,28,.94); border: 1px solid rgba(140,63,82,.5);
+            border-radius: 20px; padding: 1.4rem 1.2rem 1.1rem; text-align: center;
+            box-shadow: 0 16px 60px rgba(0,0,0,.6), 0 0 40px rgba(217,87,138,.1);
+            transform: translateY(14px) scale(.97); transition: transform .32s cubic-bezier(.34,1.4,.64,1); }
+        .about-mask.show .about-box { transform: none; }
+        .about-box .lg { font-size: 1.9rem; text-shadow: 0 0 18px rgba(124,107,214,.6); }
+        .about-box h3 { font-size: 1rem; font-weight: 300; letter-spacing: 4px; color: #f2f0f7; margin: 0.5rem 0 0.2rem; }
+        .about-box .vr { font-size: 0.68rem; color: var(--text-hint); letter-spacing: 1px; }
+        .about-box .dc { font-size: 0.66rem; color: rgba(255,255,255,.4); line-height: 1.8; margin: 0.7rem 0 0.8rem; }
+        .about-box .ok { width: 100%; height: 44px; border: none; border-radius: 999px; cursor: pointer;
+            background: linear-gradient(90deg, #c78a8a, #d9578a 48%, #7c6bd6); color: #fff;
+            font-size: 13.5px; font-weight: 500; letter-spacing: 3px; }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="spirit-glow"></div>
+    <canvas id="spirit-canvas"></canvas>
+
+    <div class="container">
+        <!-- 顶栏 -->
+        <div class="p-head">
+            <div style="font-size:1.45rem;font-weight:300;letter-spacing:7px;text-indent:7px;color:#f2f0f7;">我 的</div>
+            <a class="p-login-btn" id="loginBtn" href="login.html">登录 / 注册</a>
+        </div>
+
+        <!-- 个人信息卡（柔金渐变） -->
+        <div class="p-card">
+            <div class="p-orb glow-orb" id="pOrb" data-c1="#b8aee8" data-c2="#d9578a">🧘</div>
+            <div class="p-info">
+                <div class="p-nick" id="pNick">矿工小王<span class="vip" id="pVip" style="display:none">王半仙旅人</span></div>
+                <div class="p-meme">🏅 职业原型：<b id="pMeme">职场摆摊人 🧳</b></div>
+            </div>
+            <div class="p-gold">
+                <div class="v" id="pGold">1,280</div>
+                <div class="k">⚡ 淘金力积分</div>
+            </div>
+        </div>
+
+        <!-- 成就荣誉墙 -->
+        <div class="p-sec"><span class="p-sec-t">👑 我的成就</span><a class="p-sec-more" href="javascript:void(0)" onclick="toast('更多成就即将解锁，继续挖掘吧')">查看全部 →</a></div>
+        <div class="card" style="padding:0.8rem 0.7rem;">
+            <div class="ach-grid" id="achGrid"></div>
+        </div>
+
+        <!-- 我的咨询 -->
+        <div class="p-sec"><span class="p-sec-t">📋 我的咨询</span><a class="p-sec-more" href="chat.html">去咨询 →</a></div>
+        <div class="card" style="padding:0.8rem 0.7rem;">
+            <div class="con-grid" id="conGrid"></div>
+        </div>
+
+        <!-- 我的报告 -->
+        <div class="p-sec"><span class="p-sec-t">📄 我的报告</span><a class="p-sec-more" href="index.html">生成新报告 →</a></div>
+        <div class="card" style="padding:0.2rem 0.9rem 0.7rem;">
+            <div id="repList">
+                <p style="font-size:0.78rem;color:var(--text-hint);padding:0.6rem 0">暂无报告，先去测一次职场天赋吧。</p>
+            </div>
+        </div>
+
+        <!-- 灵体记忆 -->
+        <div class="p-sec"><span class="p-sec-t">🧠 灵体记忆</span><span class="p-sec-more" style="color:var(--text-hint)">校准 · 动作 · 情绪</span></div>
+        <div class="card" style="padding:0.9rem 0.8rem;">
+            <div class="mem-row">
+                <div class="mem-cell"><div class="n" id="mCalib">0</div><div class="k">校准记录</div></div>
+                <div class="mem-cell"><div class="n" id="mAction">0</div><div class="k">有效动作</div></div>
+                <div class="mem-cell"><div class="n" id="mTrend">—</div><div class="k">情绪趋势</div></div>
+            </div>
+            <svg class="mem-spark" id="memSpark" viewBox="0 0 300 52" preserveAspectRatio="none"></svg>
+        </div>
+
+        <!-- 设置 -->
+        <div class="p-sec"><span class="p-sec-t">⚙️ 设置</span></div>
+        <div class="card" style="padding:0.1rem 0.9rem;">
+            <a class="menu-item" href="index.html"><span class="ic">🕯️</span><span class="tx">出生档案</span><span class="ds" id="setBirth">未设置</span><span class="ar">→</span></a>
+            <a class="menu-item" href="javascript:void(0)" onclick="toast('通知设置开发中，敬请期待')"><span class="ic">🔔</span><span class="tx">通知设置</span><span class="ds">每日运势提醒</span><span class="ar">→</span></a>
+            <a class="menu-item" href="privacy.html"><span class="ic">🛡️</span><span class="tx">隐私管理</span><span class="ds">匿名 · 脱敏</span><span class="ar">→</span></a>
+            <a class="menu-item" href="javascript:void(0)" onclick="showAbout()"><span class="ic">✦</span><span class="tx">关于王半仙</span><span class="ds">v3.0</span><span class="ar">→</span></a>
+        </div>
+
+        <div class="disclaimer">本产品内容仅供传统文化研究与娱乐参考，不构成任何决策依据。</div>
+    </div>
+
+    <!-- 关于弹窗 -->
+    <div class="about-mask" id="aboutMask" onclick="if(event.target===this)hideAbout()">
+        <div class="about-box">
+            <div class="lg">✦</div>
+            <h3>启 途</h3>
+            <div class="vr">BANXIAN · 职业天赋导航 v3.0</div>
+            <div class="dc">溯禀赋之源，启职业之途。<br>知命不认命，天赋定航向。<br>内容仅供传统文化研究与娱乐参考。</div>
+            <button class="ok" onclick="hideAbout()">知 道 了</button>
+        </div>
+    </div>
+
+    <div id="toastBox" style="position:fixed;left:50%;bottom:5rem;transform:translateX(-50%);z-index:999;background:rgba(18,18,28,.92);border:1px solid rgba(217,87,138,.45);border-radius:999px;padding:0.5rem 1.1rem;font-size:0.75rem;color:#f2f0f7;letter-spacing:1px;opacity:0;pointer-events:none;transition:opacity .3s;max-width:80vw;text-align:center;"></div>
+
+    <script src="js/starfield.js?v=2"></script>
+    <script src="js/spirit.js?v=2"></script>
+    <script src="js/auth.js?v=1"></script>
+    <script>
+    /* 页面逻辑由 profile-app.js 加载 */
+    </script>
+    <script src="js/profile-app.js?v=1"></script>
+    <script src="js/glow-orb.js?v=1"></script>
+    <script src="js/tabbar.js?v=5"></script>
+</body>
+</html>

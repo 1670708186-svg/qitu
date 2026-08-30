@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>分享卡片 · 王半仙</title>
+    <link rel="stylesheet" href="css/starla.css?v=5">
+    <script src="vendor/qrcode.min.js"></script>
+    <style>
+        
+        .page-header { text-align: center; padding: 1.6rem 0 0.8rem; }
+        .page-header .title { font-size: 1.55rem; color: var(--gold-light); letter-spacing: 6px; }
+        .page-header .subtitle { color: var(--text-dim); font-size: 0.85rem; margin-top: 0.4rem; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem; }
+        .top-bar a { color: var(--gold); text-decoration: none; font-size: 0.9rem; }
+        .share-stage {
+            max-width: 375px; margin: 0.6rem auto 1rem; border-radius: 18px; overflow: hidden;
+            box-shadow: 0 8px 40px rgba(124,107,214,0.18), 0 2px 12px rgba(0,0,0,0.5);
+            border: 1px solid rgba(124,107,214,0.35);
+        }
+        .share-stage canvas { display: block; width: 100%; height: auto; }
+        .btn-row { display: flex; gap: 0.7rem; justify-content: center; padding-bottom: 1.2rem; }
+        .action-btn {
+            padding: 0.75rem 1.6rem; border-radius: 999px; border: none; cursor: pointer;
+            font-size: 0.92rem; font-weight: 700; transition: transform 0.15s, opacity 0.15s;
+        }
+        .action-btn:active { transform: scale(0.96); }
+        .btn-gold {
+            background: rgba(184, 174, 232, 0.16);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(184, 174, 232, 0.45);
+            color: #e9e6f6;
+            box-shadow: 0 8px 24px rgba(0,0,0,.28);
+        }
+        .btn-ghost {
+            background: rgba(10,10,30,0.55); color: var(--gold-light);
+            border: 1px solid rgba(124,107,214,0.4);
+        }
+        .loading { text-align: center; padding: 4rem 1rem; color: var(--text-dim); }
+        .spinner {
+            width: 36px; height: 36px; margin: 0 auto 0.9rem; border-radius: 50%;
+            border: 3px solid rgba(124,107,214,0.2); border-top-color: var(--gold);
+            animation: spin 0.9s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .toast {
+            position: fixed; left: 50%; bottom: 3rem; transform: translateX(-50%) translateY(20px);
+            background: rgba(26,34,38,0.95); border: 1px solid rgba(124,107,214,0.5);
+            color: var(--gold-light); padding: 0.65rem 1.3rem; border-radius: 999px;
+            font-size: 0.85rem; opacity: 0; pointer-events: none; transition: all 0.3s;
+            z-index: 99;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a2226">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="王半仙">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-390x844.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-430x932.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-375x812.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icons/icon-192.png">
+    <script src="js/config.js?v=1"></script>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="spirit-glow"></div>
+    <canvas id="spirit-canvas"></canvas>
+    
+
+    <div class="container">
+        <div class="top-bar">
+            <a href="report.html">← 返回报告</a>
+            <a href="index.html">首页</a>
+        </div>
+
+        <div class="page-header">
+            <div class="title serif-title">分 享 卡</div>
+            <div class="subtitle">人生没有AB剧，选对属于自己的赛道</div>
+        </div>
+
+        <div class="share-stage" id="stage">
+            <div class="loading">
+                <div class="spinner"></div>
+                <div>正在绘制你的专属星卡…</div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="action-btn btn-gold" id="shareBtn" onclick="shareToFriends()" disabled>分享给朋友</button>
+            <button class="action-btn btn-ghost" id="saveBtn" onclick="saveImage()" disabled>保存图片</button>
+            <button class="action-btn btn-ghost" onclick="copyLink()">复制链接</button>
+        </div>
+
+        <div class="disclaimer">
+            分享卡仅供娱乐互动，命理内容不构成任何决策依据。
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="js/starfield.js?v=5"></script>
+    <script>
+        const W = 750, H = 1000;
+        let reportData = null;
+        let memeCard = null;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2200);
+        }
+
+        function loadImg(src) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = src;
+            });
+        }
+
+        async function draw() {
+            const cv = document.createElement('canvas');
+            cv.width = W; cv.height = H;
+            const ctx = cv.getContext('2d');
+
+            // 1. 星空渐变背景
+            const bg = ctx.createLinearGradient(0, 0, W, H);
+            bg.addColorStop(0, '#1a2226');
+            bg.addColorStop(0.5, '#1a2226');
+            bg.addColorStop(1, '#1a2226');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, W, H);
+
+            // 星点
+            let seed = 42;
+            const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+            for (let i = 0; i < 90; i++) {
+                const x = rnd() * W, y = rnd() * H, r = rnd() * 1.6 + 0.4;
+                ctx.globalAlpha = rnd() * 0.7 + 0.2;
+                ctx.fillStyle = rnd() > 0.85 ? '#e9e6f6' : '#ffffff';
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+
+            // 金色装饰圆环
+            ctx.strokeStyle = 'rgba(124,107,214,0.25)';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(W - 90, 120, 170, 0, Math.PI * 2); ctx.stroke();
+            ctx.beginPath(); ctx.arc(60, H - 160, 130, 0, Math.PI * 2); ctx.stroke();
+
+            // 2. 顶部品牌
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#e9e6f6';
+            ctx.font = '700 44px "STKaiti","KaiTi",serif';
+            ctx.fillText('启 途', W / 2, 88);
+            ctx.fillStyle = '#a89fc4';
+            ctx.font = '22px sans-serif';
+            ctx.fillText('演算与生俱来的生命密码', W / 2, 128);
+
+            // 分割线
+            const lineGrad = ctx.createLinearGradient(120, 0, W - 120, 0);
+            lineGrad.addColorStop(0, 'rgba(124,107,214,0)');
+            lineGrad.addColorStop(0.5, 'rgba(124,107,214,0.8)');
+            lineGrad.addColorStop(1, 'rgba(124,107,214,0)');
+            ctx.strokeStyle = lineGrad; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(120, 158); ctx.lineTo(W - 120, 158); ctx.stroke();
+
+            // 3. 人格卡图
+            const meme = memeCard || {};
+            let img = null;
+            if (meme.id) img = await loadImg(`img/cards/${meme.id}.jpg`);
+            const cardTop = 196, cardSize = 340;
+            const cardX = (W - cardSize) / 2;
+            // 卡片底框
+            ctx.save();
+            ctx.shadowColor = 'rgba(124,107,214,0.45)'; ctx.shadowBlur = 30;
+            ctx.fillStyle = 'rgba(26,34,38,0.9)';
+            roundRect(ctx, cardX, cardTop, cardSize, cardSize, 22);
+            ctx.fill();
+            ctx.restore();
+            ctx.strokeStyle = 'rgba(124,107,214,0.55)'; ctx.lineWidth = 2;
+            roundRect(ctx, cardX, cardTop, cardSize, cardSize, 22);
+            ctx.stroke();
+
+            if (img) {
+                ctx.save();
+                roundRect(ctx, cardX + 10, cardTop + 10, cardSize - 20, cardSize - 20, 16);
+                ctx.clip();
+                // cover 裁剪
+                const scale = Math.max((cardSize - 20) / img.width, (cardSize - 20) / img.height);
+                const dw = img.width * scale, dh = img.height * scale;
+                ctx.drawImage(img, cardX + 10 + ((cardSize - 20) - dw) / 2,
+                              cardTop + 10 + ((cardSize - 20) - dh) / 2, dw, dh);
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#e9e6f6';
+                ctx.font = '700 120px "STKaiti","KaiTi",serif';
+                ctx.fillText(meme.charTag || '星', W / 2, cardTop + cardSize / 2 + 42);
+            }
+
+            // 4. 人格名 + 编码
+            let y = cardTop + cardSize + 66;
+            ctx.fillStyle = '#e9e6f6';
+            ctx.font = '700 52px "STKaiti","KaiTi",serif';
+            ctx.fillText(meme.name || '天命之人', W / 2, y);
+
+            y += 44;
+            if (meme.code) {
+                ctx.strokeStyle = 'rgba(124,107,214,0.7)';
+                ctx.lineWidth = 2.5;
+                roundRect(ctx, W / 2 - 95, y - 40, 190, 56, 12);
+                ctx.stroke();
+                ctx.fillStyle = '#b8aee8';
+                ctx.font = '700 38px "STKaiti","KaiTi",serif';
+                ctx.fillText(meme.code.split('').join(' '), W / 2, y);
+                y += 52;
+            }
+
+            // slogan
+            if (meme.slogan) {
+                ctx.fillStyle = '#e8e4f0';
+                ctx.font = '26px sans-serif';
+                ctx.fillText(`我的禀赋：${meme.name || '天命之人'}｜人生没有AB剧，选对赛道`, W / 2, y + 14);
+                y += 56;
+            }
+
+            // 5. 四柱摘要
+            const chart = reportData.chart || reportData.summary || {};
+            const pillars = (reportData.chart && reportData.chart.pillars) ||
+                            (reportData.summary && reportData.summary.pillars) || [];
+            if (pillars.length) {
+                const pzText = Array.isArray(pillars)
+                    ? pillars.map(p => typeof p === 'string' ? p : `${p.name}${p.ganzhi}`).join('　')
+                    : '';
+                ctx.fillStyle = '#a89fc4';
+                ctx.font = '24px "STKaiti","KaiTi",serif';
+                ctx.fillText(pzText, W / 2, y + 10);
+                y += 46;
+            }
+
+            // 6. 二维码 + 链接
+            const qrY = H - 150;
+            let qrOK = false;
+            if (typeof QRCode !== 'undefined' && reportData.report_id) {
+                try {
+                    const tmp = document.createElement('canvas');
+                    await QRCode.toCanvas(tmp, `${location.origin}/report.html?id=${reportData.report_id}`, {
+                        width: 180, margin: 1, color: { dark: '#1a2226', light: '#e9e6f6' },
+                    });
+                    ctx.save();
+                    roundRect(ctx, W / 2 - 60, qrY - 60, 120, 120, 10);
+                    ctx.clip();
+                    ctx.drawImage(tmp, W / 2 - 60, qrY - 60, 120, 120);
+                    ctx.restore();
+                    ctx.strokeStyle = 'rgba(124,107,214,0.5)'; ctx.lineWidth = 1.5;
+                    roundRect(ctx, W / 2 - 60, qrY - 60, 120, 120, 10);
+                    ctx.stroke();
+                    qrOK = true;
+                } catch (e) { /* 降级 */ }
+            }
+            ctx.fillStyle = '#a89fc4';
+            ctx.font = '20px sans-serif';
+            ctx.fillText(qrOK ? '扫码溯源你的职业天赋' : '溯禀赋之源 · 启职业之途', W / 2, qrY + 92);
+
+            return cv;
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.arcTo(x + w, y, x + w, y + h, r);
+            ctx.arcTo(x + w, y + h, x, y + h, r);
+            ctx.arcTo(x, y + h, x, y, r);
+            ctx.arcTo(x, y, x + w, y, r);
+            ctx.closePath();
+        }
+
+        async function render() {
+            // 数据三级兜底：sessionStorage → localStorage（离线可用）→ URL 拉取
+            const raw = sessionStorage.getItem('reportData');
+            if (raw) {
+                try { reportData = JSON.parse(raw); } catch (e) { reportData = null; }
+            }
+            if (!reportData) {
+                try {
+                    const list = JSON.parse(localStorage.getItem('qitu_reports') || '[]');
+                    const params = new URLSearchParams(location.search);
+                    const rid = params.get('id') || sessionStorage.getItem('currentReportId');
+                    const hit = rid ? list.find(r => r.report_id === rid) : list[0];
+                    if (hit && hit.data) reportData = hit.data;
+                } catch (e) {}
+            }
+            if (!reportData) {
+                const params = new URLSearchParams(location.search);
+                const rid = params.get('id') || sessionStorage.getItem('currentReportId');
+                if (rid) {
+                    try {
+                        const resp = await fetch(window.API_BASE + `/api/report/${rid}`);
+                        if (resp.ok) reportData = await resp.json();
+                    } catch (e) {}
+                }
+            }
+
+            if (!reportData) {
+                document.getElementById('stage').innerHTML = `
+                <div class="loading">
+                    <p style="font-size:1.8rem">🌙</p>
+                    <p>还没有报告数据</p>
+                    <p><a href="index.html" style="color:var(--gold)">← 去生成你的报告</a></p>
+                </div>`;
+                return;
+            }
+
+            memeCard = (reportData.meme_card) || (reportData.analysis && reportData.analysis.meme_card) || {};
+            const cv = await draw();
+            const stage = document.getElementById('stage');
+            stage.innerHTML = '';
+            stage.appendChild(cv);
+            document.getElementById('saveBtn').disabled = false;
+            document.getElementById('shareBtn').disabled = false;
+        }
+
+        // 系统原生分享：优先分享图片文件，逐级降级
+        async function shareToFriends() {
+            const cv = document.querySelector('#stage canvas');
+            const meme = memeCard || {};
+            const shareText = `我的禀赋：${meme.name || '天命之人'}${meme.code ? ' '+meme.code : ''}｜人生没有AB剧，选对属于自己的赛道✨`;
+            try {
+                // 1) 最佳：图片文件 + 文案（微信/WhatsApp 等可直接发图）
+                if (cv && navigator.canShare) {
+                    const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+                    if (blob && navigator.canShare({ files: [new File([blob], 'qitu-card.png', { type: 'image/png' })] })) {
+                        await navigator.share({
+                            files: [new File([blob], `王半仙-${meme.name || '分享卡'}.png`, { type: 'image/png' })],
+                            title: '王半仙 · 我的职业禀赋',
+                            text: shareText,
+                        });
+                        return;
+                    }
+                }
+                // 2) 纯文本分享（iOS Safari 老版本等）
+                if (navigator.share) {
+                    await navigator.share({ title: '王半仙 · 我的职业禀赋', text: shareText });
+                    return;
+                }
+                // 3) 都不支持：复制文案 + 提示保存图片
+                await navigator.clipboard.writeText(shareText);
+                showToast('已复制文案，点「保存图片」后即可发送');
+            } catch (e) {
+                if (e && e.name === 'AbortError') return; // 用户取消
+                showToast('分享取消或失败，可先保存图片再发送');
+            }
+        }
+
+        function saveImage() {
+            const cv = document.querySelector('#stage canvas');
+            if (!cv) return;
+            const a = document.createElement('a');
+            a.download = `王半仙-${memeCard && memeCard.name ? memeCard.name : '分享卡'}.png`;
+            a.href = cv.toDataURL('image/png');
+            a.click();
+            showToast('已保存到相册/下载目录');
+        }
+
+        async function copyLink() {
+            const rid = reportData && reportData.report_id;
+            const link = rid ? `${location.origin}/report.html?id=${rid}` : location.origin;
+            try {
+                await navigator.clipboard.writeText(link);
+                showToast('链接已复制：' + link);
+            } catch (e) {
+                showToast(link);
+            }
+        }
+
+        render();
+    </script>
+    <script src="js/tabbar.js?v=5"></script>
+</body>
+</html>

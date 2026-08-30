@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>隐私政策 · 王半仙</title>
+    <link rel="stylesheet" href="css/starla.css?v=5">
+    <style>
+        body { min-height: 100vh; padding: 2rem 1rem; }
+        .legal-wrap { max-width: 720px; margin: 0 auto; background: rgba(10,10,30,0.6); border: 1px solid rgba(124,107,214,0.2); border-radius: 14px; padding: 2rem 1.6rem; }
+        .legal-wrap h1 { font-size: 1.5rem; color: var(--gold-light); margin-bottom: 0.4rem; font-family: "STKaiti","KaiTi",serif; }
+        .legal-wrap .sub { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+        .legal-wrap h2 { font-size: 1.05rem; color: var(--gold-light); margin: 1.5rem 0 0.6rem; border-left: 3px solid var(--gold); padding-left: 0.6rem; }
+        .legal-wrap p, .legal-wrap li { font-size: 0.86rem; line-height: 1.85; color: var(--text-main); }
+        .legal-wrap ul { padding-left: 1.4rem; }
+        .legal-wrap a.back { display: inline-block; margin-bottom: 1.2rem; color: var(--gold-light); text-decoration: none; font-size: 0.85rem; }
+        .legal-wrap a.back:hover { text-decoration: underline; }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a2226">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="王半仙">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-390x844.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-430x932.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-375x812.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icons/icon-192.png">
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="spirit-glow"></div>
+    <canvas id="spirit-canvas"></canvas>
+    <div class="legal-wrap">
+        <a href="index.html" class="back">← 返回首页</a>
+        <h1>隐私政策</h1>
+        <div class="sub">最后更新：2026 年 8 月 · 王半仙 App</div>
+
+        <h2>一、信息收集原则</h2>
+        <p>本产品坚持"最小化收集"原则。我们只收集为您提供分析所必需的信息，不收集与服务无关的个人信息。</p>
+
+        <h2>二、收集的信息</h2>
+        <ul>
+            <li><strong>出生日期与时辰（可选）</strong>：用于传统文化性格分析，不会用于任何其他用途</li>
+            <li><strong>性别（可选）</strong>：用于个性化推荐</li>
+            <li><strong>出生地经度（可选）</strong>：仅用于传统历法真太阳时修正，不存储</li>
+            <li><strong>对话历史（可选）</strong>：您与 AI 导师的对话内容，仅在浏览器本地缓存</li>
+        </ul>
+
+        <h2>三、信息使用</h2>
+        <p>收集的信息仅用于：</p>
+        <ul>
+            <li>生成您的传统文化性格分析报告</li>
+            <li>提供对话与建议服务</li>
+            <li>不会用于商业广告、用户画像或第三方共享</li>
+        </ul>
+
+        <h2>四、信息存储与安全</h2>
+        <ul>
+            <li>您的输入与生成结果默认仅在浏览器会话中临时保留（sessionStorage），关闭页面即清除</li>
+            <li>我们不会主动持久化存储您的出生信息或报告内容</li>
+            <li>数据传输全程使用 HTTPS 加密</li>
+            <li>我们不会向任何第三方提供、出售或出租您的个人信息</li>
+        </ul>
+
+        <h2>五、第三方服务</h2>
+        <p>本产品的 AI 对话功能由第三方模型服务提供支持。当您主动发起对话时，相关问题内容会传输至该服务以生成回复。我们已与该服务签订数据保护协议，要求其不得留存或滥用您的内容。</p>
+
+        <h2>六、您的权利</h2>
+        <ul>
+            <li><strong>知情权</strong>：您有权了解我们收集了您的哪些信息</li>
+            <li><strong>删除权</strong>：您可随时清除浏览器缓存，即可删除所有本地记录</li>
+            <li><strong>撤回权</strong>：您可拒绝提供任何可选信息，仅核心功能仍可使用</li>
+            <li><strong>投诉权</strong>：如对个人信息处理有疑问，可通过应用内反馈渠道联系</li>
+        </ul>
+
+        <h2>七、未成年人保护</h2>
+        <p>本产品面向 14 周岁及以上用户。我们不会主动收集 14 周岁以下未成年人的个人信息。如发现相关情况，请联系我们删除。</p>
+
+        <h2>八、政策变更</h2>
+        <p>本政策可能根据法律法规变化或服务调整进行修订，修订后的版本将在本页面公布。如有重大变更，我们将以显著方式提醒您。</p>
+
+        <h2>九、联系与投诉</h2>
+        <p>如对本政策有任何疑问或需要行使您的权利，可通过应用内反馈渠道联系我们。</p>
+
+        <h2>十、生效时间</h2>
+        <p>本政策自 2026 年 8 月起生效。</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="王半仙 BANXIAN · AI 命理职业导航 · 溯禀赋之源，启职业之途">
+    <title>王半仙 · 溯禀赋之源，启职业之途</title>
+    <link rel="stylesheet" href="css/spirit.css?v=1">
+    <link rel="stylesheet" href="css/starla.css?v=1">
+    <meta name="theme-color" content="#1a2226">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>">
+</head>
+<body>
+
+    <!-- 星空滑落（保留原版） -->
+    <canvas id="starfield"></canvas>
+    <!-- 弥散光晕背景层 -->
+    <div class="spirit-glow"></div>
+    <!-- 氛围画布层（透明，球体已移除） -->
+    <canvas id="spirit-canvas"></canvas>
+
+    <!-- ══════════ 屏 0 · 启动动画（星芒主视觉：白色火花放射 + 深空蓝黑底，无光球） ══════════ -->
+    <section class="sp-screen active" id="spLoader">
+        <canvas id="nebulaCanvas"></canvas>
+        <div class="sp-orb-zone"></div>
+
+        <!-- 发散光芒层（由 opening.js 白色火花放射呈现，圆球元素已移除） -->
+        <div class="sp-rays" id="spRays" aria-hidden="true">
+            <div class="sp-rays-inner"></div>
+        </div>
+
+        <div class="sp-loader-text" id="loaderText"></div>
+        <div class="sp-loader-brand">王半仙<span class="sp-loader-brand-en">BANXIAN</span></div>
+        <button class="sp-skip" id="skipLoader">跳过</button>
+        <button class="sp-audio-toggle" id="spAudioToggle" aria-label="音效开关">🔇</button>
+        <div class="sp-legal">命理内容仅供传统文化研究与娱乐参考</div>
+    </section>
+
+    <!-- ══════════ 屏 1 · 星际入口 ══════════ -->
+    <section class="sp-screen sp-gate" id="spGate">
+        <div class="sp-orb-zone"></div>
+        <div class="sp-gate-inner">
+            <h1 class="sp-gate-title">溯禀赋之源<br>启职业之途</h1>
+            <p class="sp-gate-sub" id="gateSub"></p>
+        </div>
+        <div class="sp-gate-hint">轻触任意位置 · 唤醒王半仙</div>
+        <div class="sp-legal">命理内容仅供传统文化研究与娱乐参考</div>
+    </section>
+
+    <!-- ══════════ 屏 2 · 主页表单 ══════════ -->
+    <main class="container" id="spHome" style="display:none">
+        <div class="v3-hero">
+            <div class="logo">✦</div>
+            <h1 class="title serif-title">启 途</h1>
+            <p class="sub">溯禀赋之源，启职业之途<br>AI 命理职业导航 · 王半仙为你掌舵</p>
+        </div>
+
+        <form class="v3-form" id="v3Form" onsubmit="return false;">
+            <div class="v3-section-title">称呼</div>
+            <div class="v3-hint">选填 · 我们怎么称呼你</div>
+            <input type="text" class="form-input" id="fName" placeholder="怎么称呼你" maxlength="12" autocomplete="off">
+
+            <div class="v3-section-title" style="margin-top:1rem">性别</div>
+            <div class="seg" id="fGender">
+                <button type="button" class="seg-btn active" data-val="1">♂ 男</button>
+                <button type="button" class="seg-btn" data-val="0">♀ 女</button>
+            </div>
+
+            <div class="v3-section-title" style="margin-top:1rem">历法类型</div>
+            <div class="seg" id="fCal">
+                <button type="button" class="seg-btn active" data-val="solar">公历（阳历）</button>
+                <button type="button" class="seg-btn" data-val="lunar">农历（阴历）</button>
+            </div>
+
+            <div class="v3-section-title" style="margin-top:1rem" id="dateTitle">出生日期（公历）</div>
+            <div class="v3-hint" id="calHint">公历生日直接填写；不确定公历生日可切换农历</div>
+            <div class="v3-date-row">
+                <select class="form-input" id="fYear"></select>
+                <select class="form-input" id="fMonth"></select>
+                <select class="form-input" id="fDay"></select>
+            </div>
+
+            <div class="v3-section-title" style="margin-top:1rem">出生时辰</div>
+            <div class="v3-hint">不知道时辰可选「不知时辰」（按日柱推演）</div>
+            <select class="form-input" id="fHour"></select>
+
+            <div class="v3-section-title" style="margin-top:1rem">出生城市</div>
+            <div class="v3-hint">选填 · 用于真太阳时校算</div>
+            <input type="text" class="form-input" id="fCity" placeholder="如：成都" list="cityList" maxlength="10" autocomplete="off">
+            <datalist id="cityList"></datalist>
+            <div class="city-tz-note" id="tzNote"></div>
+
+            <button type="button" class="btn-primary" id="submitBtn" style="margin-top:1.2rem">🔮 王半仙，溯源我的天赋禀赋</button>
+            <div class="v3-err" id="formErr"></div>
+            <p class="v3-foot-note">
+                30 秒输入生辰 · 解锁你的职业天赋适配度<br>
+                <button type="button" class="v3-demo-link" id="demoLink">填入示例生辰</button>
+            </p>
+        </form>
+
+        <div class="disclaimer">
+            本产品基于传统五行、性格分析等文化元素，仅作职场心理调适与娱乐参考，<br>
+            不构成任何职业、投资、法律、医疗等专业建议。<br>
+            <a href="agreement.html">用户协议</a> ·
+            <a href="privacy.html">隐私政策</a> ·
+            <span>AI 生成内容 · 仅供参考</span>
+        </div>
+    </main>
+
+    <!-- ══════════ 王半仙 AB 剧对白弹窗 ══════════ -->
+    <div class="bx-overlay" id="bxOverlay">
+        <div class="bx-panel">
+            <div class="bx-head">
+                <div class="bx-orb glow-orb" data-c1="#b8aee8" data-c2="#d9578a">🧘</div>
+                <div>
+                    <div class="bx-name">王半仙</div>
+                    <div class="bx-role">玄学职场派 AI 参谋 · 在线</div>
+                </div>
+            </div>
+            <div class="bx-body" id="bxBody"></div>
+            <div class="bx-btns" id="bxBtns"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="js/starfield.js?v=1"></script>
+    <script src="js/spirit.js?v=1"></script>
+    <script src="js/opening.js?v=1"></script>
+    <script src="js/config.js?v=1"></script>
+    <script src="js/auth.js?v=1"></script>
+    <script src="js/glow-orb.js?v=1"></script>
+    <script src="js/tabbar.js?v=1"></script>
+    <script>
+    (function () {
+        'use strict';
+
+        /* ================= 常量与工具 ================= */
+        var HOURS = [
+            { v: -1, t: '不知时辰' },
+            { v: 0, t: '子时 23-1点' }, { v: 1, t: '丑时 1-3点' }, { v: 3, t: '寅时 3-5点' },
+            { v: 5, t: '卯时 5-7点' }, { v: 7, t: '辰时 7-9点' }, { v: 9, t: '巳时 9-11点' },
+            { v: 11, t: '午时 11-13点' }, { v: 13, t: '未时 13-15点' }, { v: 15, t: '申时 15-17点' },
+            { v: 17, t: '酉时 17-19点' }, { v: 19, t: '戌时 19-21点' }, { v: 21, t: '亥时 21-23点' },
+        ];
+        // 主要城市经度（真太阳时校算）
+        var CITIES = {
+            '北京': 116.41, '上海': 121.47, '广州': 113.26, '深圳': 114.06, '成都': 104.06,
+            '杭州': 120.15, '武汉': 114.31, '西安': 108.94, '重庆': 106.55, '南京': 118.78,
+            '长沙': 112.94, '郑州': 113.62, '沈阳': 123.43, '哈尔滨': 126.53, '乌鲁木齐': 87.62,
+            '昆明': 102.71, '厦门': 118.09, '青岛': 120.38, '苏州': 120.58, '天津': 117.20,
+            '济南': 117.12, '大连': 121.61, '合肥': 117.28, '福州': 119.30, '南宁': 108.37,
+            '贵阳': 106.71, '太原': 112.55, '石家庄': 114.51, '兰州': 103.83, '呼和浩特': 111.75,
+            '银川': 106.23, '西宁': 101.78, '拉萨': 91.11, '长春': 125.32, '南昌': 115.86,
+            '海口': 110.33, '宁波': 121.55, '无锡': 120.31, '佛山': 113.12, '东莞': 113.75,
+        };
+
+        function $(id) { return document.getElementById(id); }
+        function toast(msg) {
+            var t = $('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._tm);
+            t._tm = setTimeout(function () { t.classList.remove('show'); }, 2400);
+        }
+
+        /* 打字机逐字 */
+        function typewriter(el, text, speed, done) {
+            el.innerHTML = '';
+            var i = 0;
+            var cursor = '<span class="cursor"></span>';
+            (function tick() {
+                if (i < text.length) {
+                    el.innerHTML = text.slice(0, i + 1) + cursor;
+                    i++;
+                    setTimeout(tick, speed || 90);
+                } else {
+                    el.innerHTML = text;
+                    if (done) done();
+                }
+            })();
+        }
+
+        /* ================= 启动屏 → 入口屏（白色火花爆发 + Calculating + 宇宙音效） ================= */
+        var LOADER_LINE = '正在链接高维…';
+        var skipLoader = false;
+        function enterGate() {
+            if (skipLoader) return;
+            skipLoader = true;
+            $('spLoader').classList.remove('active');
+            $('spGate').classList.add('active');
+            // 停火花、淡出宇宙音效
+            if (window.Opening) {
+                window.Opening.nebulaStop();
+                window.Opening.audio.fadeOut();
+            }
+            window.Spirit && window.Spirit.setMode('ambient');
+            if (!$('gateSub').textContent) {
+                typewriter($('gateSub'), '人生没有AB剧，没有存档回档，也没有平行世界供你试错不同职业结局。\n我王半仙不替你改写命运，只帮你看懂手里与生俱来的底牌。', 42);
+            }
+        }
+        $('skipLoader').addEventListener('click', enterGate);
+
+        // 主视觉时间线：白色火花爆发 + 正在链接高维 → 进入入口屏
+        window.Spirit && window.Spirit.setMode('loaderWhite');
+        typewriter($('loaderText'), LOADER_LINE, 55);
+        if (window.Opening) {
+            window.Opening.nebulaStart();
+            window.Opening.startTimeline(function () {
+                setTimeout(enterGate, 500);
+            });
+        } else {
+            setTimeout(enterGate, 3200);
+        }
+
+        // 入口屏：轻触唤醒 → 表单
+        $('spGate').addEventListener('click', function () {
+            if (skipLoader !== true) enterGate();   // 动画未走完：先跳过启动屏
+            if (!$('spHome').style.display || $('spHome').style.display === 'none') {
+                $('spGate').classList.remove('active');
+                $('spHome').style.display = 'block';
+                window.Spirit && window.Spirit.setMode('form');
+                buildSelects();
+            }
+        });
+
+        /* ================= 表单构建 ================= */
+        function buildSelects() {
+            var y = $('fYear');
+            if (y.options.length) return;
+            for (var i = 2030; i >= 1900; i--) {
+                var o = document.createElement('option');
+                o.value = i; o.textContent = i + ' 年';
+                if (i === 1995) o.selected = true;
+                y.appendChild(o);
+            }
+            var m = $('fMonth');
+            for (var j = 1; j <= 12; j++) {
+                var o2 = document.createElement('option');
+                o2.value = j; o2.textContent = j + ' 月';
+                if (j === 6) o2.selected = true;
+                m.appendChild(o2);
+            }
+            var d = $('fDay');
+            for (var k = 1; k <= 31; k++) {
+                var o3 = document.createElement('option');
+                o3.value = k; o3.textContent = k + ' 日';
+                if (k === 15) o3.selected = true;
+                d.appendChild(o3);
+            }
+            var h = $('fHour');
+            HOURS.forEach(function (item) {
+                var o4 = document.createElement('option');
+                o4.value = item.v; o4.textContent = item.t;
+                h.appendChild(o4);
+            });
+            // 城市 datalist
+            Object.keys(CITIES).forEach(function (c) {
+                var oc = document.createElement('option');
+                oc.value = c;
+                $('cityList').appendChild(oc);
+            });
+            // 月份天数联动（公历）
+            rebuildDays();
+            $('fYear').addEventListener('change', rebuildDays);
+            $('fMonth').addEventListener('change', rebuildDays);
+        }
+
+        function rebuildDays() {
+            var y = parseInt($('fYear').value, 10) || 1995;
+            var m = parseInt($('fMonth').value, 10) || 1;
+            var max = 31;
+            if (m === 2) {
+                var leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+                max = leap ? 29 : 28;
+            } else if ([4, 6, 9, 11].indexOf(m) >= 0) {
+                max = 30;
+            }
+            var d = $('fDay');
+            var cur = parseInt(d.value, 10) || 1;
+            d.innerHTML = '';
+            for (var k = 1; k <= max; k++) {
+                var o = document.createElement('option');
+                o.value = k; o.textContent = k + ' 日';
+                if (k === Math.min(cur, max)) o.selected = true;
+                d.appendChild(o);
+            }
+        }
+
+        /* 性别 / 历法 切换 */
+        function bindSeg(el, cb) {
+            el.addEventListener('click', function (e) {
+                var btn = e.target.closest('.seg-btn');
+                if (!btn) return;
+                Array.prototype.forEach.call(el.children, function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                if (cb) cb(btn.dataset.val);
+            });
+        }
+        bindSeg($('fGender'));
+        bindSeg($('fCal'), function (val) {
+            var lunar = val === 'lunar';
+            $('dateTitle').textContent = lunar ? '出生日期（农历）' : '出生日期（公历）';
+            $('calHint').textContent = lunar
+                ? '农历月日填写；闰月月填负数（如 -4 表示闰四月）'
+                : '公历生日直接填写；不确定公历生日可切换农历';
+        });
+
+        /* 城市 → 真太阳时提示 */
+        $('fCity').addEventListener('input', function () {
+            var c = $('fCity').value.trim();
+            var lon = CITIES[c];
+            var note = $('tzNote');
+            if (!lon) { note.classList.remove('show'); note.textContent = ''; return; }
+            // 真太阳时偏差 ≈ (经度-120°)*4 分钟（均时差从略）
+            var diff = Math.round((lon - 120) * 4);
+            var sign = diff >= 0 ? '+' : '';
+            note.textContent = '已按' + c + '（东经' + lon.toFixed(2) + '°）校算真太阳时：' +
+                (diff === 0 ? '与北京时间一致' : '与北京时间相差 ' + sign + diff + ' 分钟') +
+                '，时辰边界已按修正后判断。';
+            note.classList.add('show');
+        });
+
+        /* 一键示例 */
+        $('demoLink').addEventListener('click', function () {
+            $('fName').value = '小途';
+            $('fYear').value = 1997; $('fMonth').value = 3; $('fDay').value = 18;
+            rebuildDays();
+            $('fHour').value = 11;
+            $('fCity').value = '成都';
+            $('fCity').dispatchEvent(new Event('input'));
+            toast('已填入示例生辰，可直接开始溯源');
+        });
+
+        /* ================= 提交：AB 剧对白 → 溯源 → 报告 ================= */
+        var state = { step: 0 };
+        var AB_LINES = [
+            '人生没有AB剧，择业没有重来键。',
+            '你这个八字，我先看一眼——嗯，天赋是藏不住的。',
+            '知命不认命，天赋定航向。这就为你溯源。',
+        ];
+
+        $('submitBtn').addEventListener('click', function () {
+            var year = parseInt($('fYear').value, 10);
+            var month = parseInt($('fMonth').value, 10);
+            var day = parseInt($('fDay').value, 10);
+            var hour = parseInt($('fHour').value, 10);
+            var gender = document.querySelector('#fGender .seg-btn.active').dataset.val;
+            var cal = document.querySelector('#fCal .seg-btn.active').dataset.val;
+            var city = $('fCity').value.trim();
+            state.name = $('fName').value.trim() || '';
+            state.city = city;
+
+            var yMin = 1900, yMax = cal === 'lunar' ? 2100 : 2030;
+            if (!year || !month || !day || year < yMin || year > yMax || month < 1 || month > 12 || day < 1 || day > 31) {
+                $('formErr').textContent = '请填写完整的出生日期';
+                return;
+            }
+            $('formErr').textContent = '';
+
+            /* ---- 阶段1：AB 剧对白弹窗 ---- */
+            var overlay = $('bxOverlay');
+            overlay.classList.add('show');
+            state.step = 0;
+            showAbLine();
+
+            function showAbLine() {
+                var body = $('bxBody');
+                var btns = $('bxBtns');
+                btns.innerHTML = '';
+                if (state.step < AB_LINES.length - 1) {
+                    btns.innerHTML = '<button class="bx-btn ghost" id="bxNext">继续</button>';
+                    typewriter(body, AB_LINES[state.step], 80, function () {
+                        var n = $('bxNext');
+                        if (n) n.addEventListener('click', function () {
+                            state.step++;
+                            showAbLine();
+                        });
+                    });
+                } else {
+                    btns.innerHTML = '<button class="bx-btn" id="bxGo">溯源开始</button>';
+                    typewriter(body, AB_LINES[state.step], 80, function () {
+                        var g = $('bxGo');
+                        if (g) g.addEventListener('click', doTrace);
+                    });
+                }
+            }
+
+            /* ---- 阶段2：灵体溯源过渡 + API ---- */
+            function doTrace() {
+                overlay.classList.remove('show');
+                window.Spirit && window.Spirit.play('implode');
+                setTimeout(function () {
+                    window.Spirit && window.Spirit.play('burst');
+                    window.Spirit && window.Spirit.setMode('ambient');
+                }, 500);
+                $('submitBtn').disabled = true;
+                $('submitBtn').textContent = '半仙溯源中…';
+
+                fetch(window.API_BASE + '/api/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        year: year, month: month, day: day,
+                        hour: hour, minute: 0,
+                        gender: parseInt(gender, 10),
+                        calendar: cal,
+                        city: city || undefined,
+                        name: $('fName').value.trim() || undefined,
+                    }),
+                })
+                .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+                .then(function (res) {
+                    if (!res.ok || !res.d.chart) throw new Error(res.d.detail || '生成失败，请稍后重试');
+                    var data = res.d;
+                    if (state.name) data._name = state.name;
+                    if (state.city) data._city = state.city;
+                    sessionStorage.setItem('reportData', JSON.stringify(data));
+                    sessionStorage.setItem('currentReportId', data.report_id || '');
+                    try {
+                        var list = JSON.parse(localStorage.getItem('qitu_reports') || '[]');
+                        list.unshift({ report_id: data.report_id || '', saved_at: new Date().toISOString(), data: data });
+                        localStorage.setItem('qitu_reports', JSON.stringify(list.slice(0, 10)));
+                    } catch (e) {}
+                    location.href = 'report.html?id=' + encodeURIComponent(data.report_id || '');
+                })
+                .catch(function (e) {
+                    $('formErr').textContent = (e && e.message) || '网络异常，请重试';
+                    $('submitBtn').disabled = false;
+                    $('submitBtn').textContent = '🔮 王半仙，溯源我的天赋禀赋';
+                });
+            }
+        });
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>命盘详情 · 王半仙</title>
+    <link rel="stylesheet" href="css/starla.css?v=5">
+    <script src="vendor/echarts.min.js"></script>
+    <style>
+        .page-header {
+            text-align: center;
+            padding: 1.5rem 0 1rem;
+        }
+        .page-header .title {
+            font-size: 1.6rem;
+            color: var(--gold-light);
+            letter-spacing: 6px;
+        }
+        .page-header .subtitle {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .top-bar a, .top-bar button {
+            color: var(--gold);
+            text-decoration: none;
+            font-size: 0.9rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        /* 藏干详情表 */
+        .hidegan-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            font-size: 0.85rem;
+            margin-top: 0.8rem;
+        }
+        .hidegan-table th:first-child { width: 15%; }
+        .hidegan-table th, .hidegan-table td {
+            padding: 0.6rem 0.4rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(184, 174, 232, 0.12);
+            vertical-align: top;
+        }
+        .hidegan-table th {
+            color: var(--gold);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .hidegan-table td {
+            color: var(--text-main);
+        }
+        .hidegan-table .zhi-char {
+            font-size: 1.3rem;
+            font-family: "STKaiti", "KaiTi", serif;
+            color: var(--gold-light);
+        }
+        .hidegan-table .ss-cell {
+            color: var(--purple-light);
+            font-size: 0.8rem;
+        }
+        /* 藏干逐行对齐 */
+        .hidegan-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .hidegan-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 1.7rem;
+        }
+        .hidegan-char {
+            font-size: 1.05rem;
+            font-family: "STKaiti", "KaiTi", serif;
+            color: var(--gold-light);
+            min-width: 1.25em;
+            text-align: center;
+        }
+        .hidegan-ss {
+            color: var(--purple-light);
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+        /* 强弱指示 */
+        .strength-bar-wrap {
+            background: rgba(10,10,30,0.6);
+            border-radius: 10px;
+            height: 12px;
+            position: relative;
+            margin: 0.8rem 0;
+        }
+        .strength-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #b8aee8, #b8aee8, #ff6b6b);
+            border-radius: 10px;
+        }
+        .strength-marker {
+            position: absolute;
+            top: -4px;
+            width: 2px;
+            height: 20px;
+            background: var(--gold-light);
+            box-shadow: 0 0 8px var(--gold-light);
+        }
+        .strength-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: var(--text-dim);
+        }
+        /* 得令得地得势三维度明细 */
+        .ddd-summary {
+            margin-top: 0.9rem;
+            font-size: 0.85rem;
+            color: var(--gold-light);
+            padding: 0.5rem 0.7rem;
+            background: rgba(124,107,214,0.08);
+            border-left: 3px solid var(--gold);
+            border-radius: 0 8px 8px 0;
+        }
+        .ddd-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.7rem;
+        }
+        .ddd-item {
+            background: rgba(10,10,30,0.5);
+            border: 1px solid rgba(124,107,214,0.15);
+            border-radius: 10px;
+            padding: 0.6rem 0.6rem 0.5rem;
+        }
+        .ddd-item.got { border-color: rgba(127,212,127,0.4); }
+        .ddd-item.lost { border-color: rgba(255,107,107,0.3); opacity: 0.85; }
+        .ddd-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .ddd-name { font-size: 0.95rem; color: var(--gold-light); }
+        .ddd-item.got .ddd-name { color: #7fd47f; }
+        .ddd-item.lost .ddd-name { color: #ff8b8b; }
+        .ddd-score { font-size: 1.05rem; color: var(--gold-light); }
+        .ddd-score small { font-size: 0.65rem; margin-left: 1px; }
+        .ddd-tip { font-size: 0.68rem; color: var(--text-dim); margin: 0.15rem 0 0.35rem; }
+        .ddd-desc { font-size: 0.72rem; line-height: 1.5; color: var(--text-dim); }
+        @media (max-width: 640px) {
+            .ddd-list { grid-template-columns: 1fr; }
+        }
+        /* 十神分布 */
+        .ss-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+        .ss-cell {
+            background: rgba(10,10,30,0.5);
+            border: 1px solid rgba(124,107,214,0.15);
+            border-radius: 8px;
+            padding: 0.5rem 0.3rem;
+            text-align: center;
+        }
+        .ss-cell .name {
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+        .ss-cell .count {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            margin-top: 0.15rem;
+        }
+        .ss-cell.active {
+            border-color: var(--gold);
+            background: rgba(124,107,214,0.12);
+        }
+        .ss-cell.active .name { color: var(--gold-light); }
+        /* 大运流年 */
+        .dayun-detail {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 0.6rem;
+        }
+        .dy-block {
+            background: rgba(10,10,30,0.5);
+            border: 1px solid rgba(124,107,214,0.15);
+            border-radius: 10px;
+            padding: 0.7rem;
+        }
+        .dy-block.current {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(124,107,214,0.15);
+        }
+        .dy-block .head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.4rem;
+        }
+        .dy-block .gz {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--gold-light);
+            font-family: "STKaiti", "KaiTi", serif;
+        }
+        .dy-block .age {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+        .dy-block .ln {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            line-height: 1.7;
+        }
+        .dy-block .ln b {
+            color: var(--purple-light);
+            font-weight: normal;
+        }
+        .no-data {
+            text-align: center;
+            padding: 4rem 1rem;
+            color: var(--text-dim);
+        }
+        .no-data a { color: var(--gold); }
+        #wuxingRadar {
+            width: 100%;
+            height: 300px;
+        }
+        .info-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px dashed rgba(124,107,214,0.15);
+            font-size: 0.9rem;
+        }
+        .info-line .k { color: var(--text-dim); }
+        .info-line .v { color: var(--gold-light); }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a2226">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="王半仙">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-390x844.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-430x932.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-startup-image" href="img/icons/startup-375x812.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
+    <link rel="apple-touch-icon" href="img/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="img/icons/icon-192.png">
+    <script src="js/config.js?v=1"></script>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="spirit-glow"></div>
+    <canvas id="spirit-canvas"></canvas>
+    
+
+    <div class="container">
+        <div class="top-bar">
+            <a href="report.html">← 返回报告</a>
+            <button onclick="window.print()">导出命盘</button>
+        </div>
+
+        <div class="page-header">
+            <div class="title serif-title">命 盘 详 情</div>
+            <div class="subtitle" id="chartSubtitle">—</div>
+        </div>
+
+        <div id="chartContent">
+            <div class="no-data">
+                <p>命盘数据不存在，请先排盘</p>
+                <p><a href="index.html">← 返回首页</a></p>
+            </div>
+        </div>
+
+        <div class="disclaimer">
+            本页命理内容仅供传统文化研究与娱乐参考，不构成任何决策依据。
+        </div>
+    </div>
+
+    <script src="js/starfield.js?v=5"></script>
+    <script src="js/chart.js?v=3"></script>
+    <script src="js/tabbar.js?v=5"></script>
+</body>
+</html>

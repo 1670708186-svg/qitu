@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>社区 · 王半仙</title>
+    <link rel="stylesheet" href="css/spirit.css?v=3">
+    <link rel="stylesheet" href="css/starla.css?v=3">
+    <meta name="theme-color" content="#0d0f16">
+    <script src="js/config.js?v=1"></script>
+    <style>
+        /* ===== 社区页专属 ===== */
+        .cm-top { display: flex; align-items: center; justify-content: space-between; padding: 0.9rem 0 0.6rem; }
+        .cm-title { font-size: 1.4rem; font-weight: 300; letter-spacing: 6px; color: #f2f0f7; text-indent: 6px; }
+        .cm-pub-btn {
+            border: 1px solid rgba(217, 87, 138, 0.55); color: #ffb3cf;
+            background: rgba(217, 87, 138, 0.10);
+            padding: 0.4rem 1.1rem; border-radius: 999px;
+            font-size: 12.5px; letter-spacing: 2px; cursor: pointer; transition: all .2s;
+        }
+        .cm-pub-btn:active { transform: scale(.95); }
+
+        /* 标签胶囊（横向滑动） */
+        .cm-chips {
+            display: flex; gap: 0.45rem; overflow-x: auto;
+            padding: 0.3rem 0 0.7rem; margin-bottom: 0.3rem;
+            scrollbar-width: none; -webkit-overflow-scrolling: touch;
+        }
+        .cm-chips::-webkit-scrollbar { display: none; }
+        .cm-chip {
+            flex-shrink: 0; font-size: 12px; letter-spacing: 1px;
+            padding: 0.42rem 0.95rem; border-radius: 999px;
+            background: rgba(20, 20, 28, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: rgba(255, 255, 255, 0.50);
+            cursor: pointer; transition: all .22s;
+        }
+        .cm-chip.on {
+            background: rgba(30, 18, 28, 0.65);
+            border: 1px solid rgba(160, 72, 96, 0.80);
+            color: #f0e6ec;
+            box-shadow: 0 0 14px rgba(140, 63, 82, 0.28);
+        }
+
+        /* 帖子卡片 */
+        .cm-post {
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 1rem 1.05rem 0.85rem;
+            margin-bottom: 0.75rem;
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+        }
+        .cm-post-head { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; }
+        .cm-avatar {
+            width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+            background: radial-gradient(circle, rgba(184,174,232,.45) 0%, rgba(217,87,138,.16) 55%, transparent 80%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: #e9e6f6;
+        }
+        .cm-avatar.mentor { background: radial-gradient(circle, rgba(233,196,106,.45) 0%, rgba(217,87,138,.16) 55%, transparent 80%); }
+        .cm-avatar.official { background: radial-gradient(circle, rgba(217,87,138,.45) 0%, rgba(124,107,214,.16) 55%, transparent 80%); }
+        .cm-who { flex: 1; min-width: 0; }
+        .cm-name { font-size: 13.5px; color: #f2f0f7; font-weight: 500; }
+        .cm-name .badge {
+            font-size: 9px; padding: 0.1rem 0.45rem; border-radius: 999px; margin-left: 0.4rem;
+            vertical-align: 1px; letter-spacing: 1px;
+        }
+        .cm-name .badge.official { background: rgba(217, 87, 138, 0.16); border: 1px solid rgba(217, 87, 138, 0.5); color: #ffb3cf; }
+        .cm-name .badge.mentor { background: rgba(233, 196, 106, 0.14); border: 1px solid rgba(233, 196, 106, 0.45); color: #e9c46a; }
+        .cm-name .badge.anon { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(255,255,255,.5); }
+        .cm-time { font-size: 10.5px; color: var(--text-hint); margin-top: 2px; }
+        .cm-type {
+            flex-shrink: 0; font-size: 10.5px; padding: 0.2rem 0.6rem; border-radius: 999px;
+            background: rgba(124, 107, 214, 0.14); border: 1px solid rgba(124, 107, 214, 0.35);
+            color: #c9c2ec; letter-spacing: 1px; white-space: nowrap;
+        }
+        .cm-type.mine { background: rgba(233, 196, 106, 0.12); border-color: rgba(233, 196, 106, 0.4); color: #e9c46a; }
+        .cm-type.help { background: rgba(217, 87, 138, 0.12); border-color: rgba(217, 87, 138, 0.4); color: #ffb3cf; }
+        .cm-type.mentor { background: rgba(233, 196, 106, 0.12); border-color: rgba(233, 196, 106, 0.4); color: #e9c46a; }
+        .cm-title-tx { font-size: 14.5px; color: #f2f0f7; font-weight: 500; line-height: 1.5; margin-bottom: 0.35rem; letter-spacing: 0.5px; }
+        .cm-content { font-size: 13px; color: rgba(255, 255, 255, 0.78); line-height: 1.85; white-space: pre-wrap; word-break: break-word; }
+        .cm-summary {
+            margin-top: 0.6rem; padding: 0.5rem 0.7rem;
+            background: rgba(233, 196, 106, 0.06);
+            border: 1px dashed rgba(233, 196, 106, 0.28);
+            border-radius: 10px;
+            font-size: 11.5px; color: rgba(233, 196, 106, 0.85); letter-spacing: 0.5px;
+        }
+        .cm-foot { display: flex; align-items: center; gap: 1rem; margin-top: 0.7rem; padding-top: 0.55rem; border-top: 1px dashed rgba(255, 255, 255, 0.07); }
+        .cm-act {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 12px; color: var(--text-dim); cursor: pointer;
+            background: none; border: none; padding: 0.2rem 0.3rem; transition: color .2s;
+        }
+        .cm-act:hover { color: #f2f0f7; }
+        .cm-act.liked { color: #ff5ca8; }
+        .cm-act.report { margin-left: auto; color: var(--text-hint); }
+        .cm-act.go { color: #e9c46a; border: 1px solid rgba(233,196,106,.35); border-radius: 999px; padding: 0.18rem 0.6rem; font-size: 0.7rem; background: rgba(233,196,106,.08); }
+
+        /* 空态 / 加载 */
+        .cm-empty { text-align: center; padding: 3rem 1rem; color: var(--text-hint); font-size: 13px; line-height: 2; }
+        .cm-loading { text-align: center; padding: 2.5rem 1rem; color: var(--text-hint); font-size: 12.5px; letter-spacing: 1px; }
+
+        /* 隐私提示条 */
+        .cm-privacy {
+            margin: 0.8rem 0 1.2rem; text-align: center;
+            font-size: 10.5px; color: var(--text-hint); line-height: 1.9; letter-spacing: 1px;
+        }
+
+        /* ===== 发帖 overlay（5.4） ===== */
+        .cm-composer {
+            position: fixed; inset: 0; z-index: 220;
+            background: rgba(5, 6, 10, 0.72);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            display: flex; align-items: flex-end; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity .35s;
+        }
+        .cm-composer.show { opacity: 1; pointer-events: auto; }
+        .cm-composer-panel {
+            width: 100%; max-width: 520px;
+            max-height: 88vh; overflow-y: auto;
+            background: rgba(16, 17, 26, 0.96);
+            border: 1px solid rgba(140, 63, 82, 0.45);
+            border-radius: 22px 22px 0 0;
+            padding: 1.2rem 1.15rem calc(1.2rem + env(safe-area-inset-bottom, 0px));
+            transform: translateY(30px); transition: transform .35s cubic-bezier(.3, 1.2, .4, 1);
+        }
+        .cm-composer.show .cm-composer-panel { transform: none; }
+        .cm-cp-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .cm-cp-title { font-size: 1.1rem; font-weight: 300; letter-spacing: 4px; color: #f2f0f7; }
+        .cm-cp-close { background: none; border: none; color: var(--text-hint); font-size: 1.2rem; cursor: pointer; padding: 0.2rem 0.5rem; }
+        .cm-cp-label { font-size: 11px; color: var(--text-hint); letter-spacing: 2px; margin-bottom: 0.5rem; }
+        .cm-cp-types { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        .cm-cp-type {
+            flex: 1; padding: 0.65rem 0.2rem; border-radius: 12px; text-align: center;
+            background: rgba(20, 20, 28, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            color: rgba(255, 255, 255, 0.45); font-size: 12.5px; letter-spacing: 1px;
+            cursor: pointer; transition: all .22s;
+        }
+        .cm-cp-type .t { display: block; font-size: 1.15rem; margin-bottom: 0.2rem; }
+        .cm-cp-type.on {
+            background: rgba(30, 18, 28, 0.65);
+            border: 1px solid rgba(160, 72, 96, 0.80);
+            color: #f0e6ec;
+            box-shadow: 0 0 14px rgba(140, 63, 82, 0.28);
+        }
+        .cm-cp-input {
+            width: 100%; background: rgba(30, 30, 40, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;
+            color: var(--text-main); font-size: 13.5px; padding: 0.75rem 0.9rem;
+            outline: none; font-family: inherit; margin-bottom: 0.7rem;
+        }
+        .cm-cp-input::placeholder { color: rgba(255, 255, 255, 0.32); }
+        .cm-cp-input:focus { border-color: rgba(140, 63, 82, 0.65); }
+        textarea.cm-cp-input { min-height: 110px; resize: vertical; line-height: 1.8; }
+        .cm-cp-opt {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.6rem 0.7rem; margin-bottom: 0.45rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px; cursor: pointer; font-size: 12.5px; color: var(--text-dim);
+        }
+        .cm-cp-opt input { accent-color: #d9578a; }
+        .cm-cp-hint { font-size: 10.5px; color: var(--text-hint); line-height: 1.8; margin: 0.3rem 0 0.9rem; letter-spacing: 0.5px; }
+        .cm-cp-send {
+            width: 100%; height: 50px; border: none; border-radius: 999px; cursor: pointer;
+            background: linear-gradient(90deg, #c78a8a, #d9578a 48%, #7c6bd6);
+            color: #fff; font-size: 14px; font-weight: 500; letter-spacing: 4px;
+            box-shadow: 0 6px 24px rgba(217, 87, 138, 0.28), 0 0 40px rgba(124, 107, 214, 0.18);
+        }
+        .cm-cp-send:disabled { opacity: 0.5; }
+        .cm-cp-err { color: #ff9db8; font-size: 11.5px; min-height: 1.2em; margin-top: 0.5rem; text-align: center; }
+        .cm-summary-preview { font-size: 11px; color: rgba(233, 196, 106, 0.85); padding: 0.4rem 0.6rem; background: rgba(233, 196, 106, 0.05); border-radius: 8px; margin-bottom: 0.5rem; display: none; line-height: 1.6; }
+        .cm-summary-preview.show { display: block; }
+    </style>
+</head>
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="spirit-glow"></div>
+    <canvas id="spirit-canvas"></canvas>
+
+    <div class="container">
+        <!-- 顶栏 -->
+        <div class="cm-top">
+            <div class="cm-title">社 区</div>
+            <button class="cm-pub-btn" id="cmPub">＋ 发布</button>
+        </div>
+
+        <!-- 标签胶囊 -->
+        <div class="cm-chips" id="cmChips">
+            <span class="cm-chip on" data-tab="hot">🔥 热门</span>
+            <span class="cm-chip" data-tab="new">🕒 最新</span>
+            <span class="cm-chip" data-tab="mine">🏆 矿脉故事</span>
+            <span class="cm-chip" data-tab="help">🎭 匿名求助</span>
+            <span class="cm-chip" data-tab="mentor">🧙 导师答疑</span>
+        </div>
+
+        <!-- 帖子流 -->
+        <div id="cmList">
+            <div class="cm-loading"><div class="spinner"></div>正在搬运广场…</div>
+        </div>
+
+        <div class="cm-privacy">
+            所有帖子默认匿名发布 · 命盘信息已脱敏（仅展示原型与五行摘要）<br>
+            可举报违规内容 · 由管理员处理
+        </div>
+    </div>
+
+    <!-- 发帖 overlay -->
+    <div class="cm-composer" id="cmComposer">
+        <div class="cm-composer-panel">
+            <div class="cm-cp-head">
+                <div class="cm-cp-title">发布</div>
+                <button class="cm-cp-close" id="cmClose">✕</button>
+            </div>
+            <div class="cm-cp-label">选择帖子类型</div>
+            <div class="cm-cp-types" id="cmTypes">
+                <div class="cm-cp-type" data-type="help"><span class="t">🎭</span>匿名求助</div>
+                <div class="cm-cp-type" data-type="mine"><span class="t">🏆</span>矿脉故事</div>
+                <div class="cm-cp-type on" data-type="talk"><span class="t">💬</span>经验交流</div>
+            </div>
+            <input class="cm-cp-input" id="cmTitle" placeholder="标题（选填）" maxlength="40">
+            <textarea class="cm-cp-input" id="cmContent" placeholder="分享你的职业困惑 / 挖矿战绩 / 经验心得…（默认匿名发布）" maxlength="500"></textarea>
+            <div class="cm-cp-opt" id="cmSummaryOpt">
+                <input type="checkbox" id="cmSummaryCb">
+                <span>附加命盘摘要（脱敏：仅职业原型 + 五行摘要）</span>
+            </div>
+            <div class="cm-summary-preview" id="cmSummaryPrev"></div>
+            <div class="cm-cp-opt">
+                <input type="checkbox" id="cmAllowMentor">
+                <span>允许导师查看我的完整命盘（默认不公开）</span>
+            </div>
+            <div class="cm-cp-hint">提示：帖子默认匿名发布，姓名与出生时间不会展示。</div>
+            <button class="cm-cp-send" id="cmSend">发 送</button>
+            <div class="cm-cp-err" id="cmErr"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="js/starfield.js?v=3"></script>
+    <script src="js/spirit.js?v=3"></script>
+    <script src="js/auth.js?v=1"></script>
+    <script>
+    (function () {
+        'use strict';
+        var $ = function (id) { return document.getElementById(id); };
+        var clientKey = (function () {
+            var k = localStorage.getItem('qitu_client_key');
+            if (!k) { k = 'k' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem('qitu_client_key', k); }
+            return k;
+        })();
+        var curTab = 'hot';
+        var allPosts = [];
+
+        function toast(msg) {
+            var t = $('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._tm);
+            t._tm = setTimeout(function () { t.classList.remove('show'); }, 2300);
+        }
+        function relTime(iso) {
+            try {
+                var d = new Date(iso); var diff = (Date.now() - d.getTime()) / 1000;
+                if (diff < 60) return '刚刚';
+                if (diff < 3600) return Math.floor(diff / 60) + ' 分钟前';
+                if (diff < 86400) return Math.floor(diff / 3600) + ' 小时前';
+                if (diff < 86400 * 7) return Math.floor(diff / 86400) + ' 天前';
+                return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+            } catch (e) { return ''; }
+        }
+        function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+        /* 本地帖子元信息：{post_id: {type, title}} */
+        function localMeta(id) {
+            try { return JSON.parse(localStorage.getItem('qitu_post_meta') || '{}')[id] || {}; } catch (e) { return {}; }
+        }
+        function saveMeta(id, meta) {
+            try {
+                var all = JSON.parse(localStorage.getItem('qitu_post_meta') || '{}');
+                all[id] = meta; localStorage.setItem('qitu_post_meta', JSON.stringify(all));
+            } catch (e) {}
+        }
+
+        /* 帖子类型推断 */
+        function postType(p) {
+            var m = localMeta(p.id);
+            if (m.type) return m.type;
+            var nick = (p.nickname || '');
+            if (nick.indexOf('半仙') >= 0 || nick.indexOf('导师') >= 0) return 'mentor';
+            if (p.meme_code || p.meme_name) return 'mine';
+            return 'talk';
+        }
+        var TYPE_TXT = { help: '🎭 匿名求助', mine: '🏆 矿脉故事', mentor: '🧙 导师答疑', talk: '💬 经验交流' };
+        var TYPE_CLS = { help: 'help', mine: 'mine', mentor: 'mentor', talk: '' };
+
+        /* 拉取帖子 */
+        function loadPosts() {
+            var list = $('cmList');
+            list.innerHTML = '<div class="cm-loading"><div class="spinner"></div>正在搬运广场…</div>';
+            fetch(window.API_BASE + '/api/posts?limit=50')
+                .then(function (r) { return r.json().catch(function () { return { posts: [] }; }); })
+                .then(function (d) { allPosts = (d.posts || []); render(); })
+                .catch(function () { allPosts = []; render(); });
+        }
+
+        /* 渲染（按当前 Tab） */
+        function render() {
+            var list = $('cmList');
+            var sorted = allPosts.slice();
+            if (curTab === 'hot') sorted.sort(function (a, b) { return (b.likes || 0) - (a.likes || 0); });
+            else if (curTab === 'new') sorted.sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
+            else sorted = sorted.filter(function (p) { return postType(p) === curTab; });
+
+            if (!sorted.length) {
+                list.innerHTML = '<div class="cm-empty">暂无帖子<br>来发第一帖，聊聊你的职场困惑或挖矿战绩 ✨</div>';
+                return;
+            }
+            list.innerHTML = sorted.map(function (p) {
+                var type = postType(p);
+                var nick = (p.nickname || '').trim();
+                var isAnon = !nick || nick === '匿名星友' || nick === '匿名用户';
+                var isOfficial = nick.indexOf('半仙') >= 0;
+                var isMentor = nick.indexOf('导师') >= 0;
+                var meta = localMeta(p.id);
+                var title = meta.title || '';
+                var avatarChar = isOfficial ? '🧙' : (isMentor ? '🧘' : (isAnon ? '👤' : (nick.charAt(0) || '👤')));
+                var avatarCls = isOfficial ? 'official' : (isMentor ? 'mentor' : '');
+                var name = isAnon ? '匿名用户' : nick;
+                var badge = isOfficial ? '<span class="badge official">官方</span>'
+                    : (isMentor ? '<span class="badge mentor">认证导师</span>'
+                    : (isAnon ? '<span class="badge anon">匿名</span>' : ''));
+                var summary = (p.meme_name || p.meme_code)
+                    ? '🔖 命盘摘要：' + esc(p.meme_name || '') + (p.meme_code ? ' · ' + esc(p.meme_code) : '') + '（五行脱敏）'
+                    : '';
+                return '<div class="cm-post" data-id="' + esc(p.id) + '">' +
+                    '<div class="cm-post-head">' +
+                    '<div class="cm-avatar glow-orb ' + avatarCls + '" data-c1="#b8aee8" data-c2="#d9578a">' + avatarChar + '</div>' +
+                    '<div class="cm-who"><div class="cm-name">' + esc(name) + badge + '</div>' +
+                    '<div class="cm-time">' + relTime(p.created_at) + '</div></div>' +
+                    '<span class="cm-type ' + TYPE_CLS[type] + '">' + TYPE_TXT[type] + '</span>' +
+                    '</div>' +
+                    (title ? '<div class="cm-title-tx">' + esc(title) + '</div>' : '') +
+                    '<div class="cm-content">' + esc(p.content) + '</div>' +
+                    (summary ? '<div class="cm-summary">' + summary + '</div>' : '') +
+                    '<div class="cm-foot">' +
+                    '<span class="cm-act" data-act="like">♥ <span>' + (p.likes || 0) + '</span></span>' +
+                    (isOfficial
+                        ? '<span class="cm-act go" data-go="ai">💬 找王半仙 AI 聊</span>'
+                        : (isMentor
+                            ? '<span class="cm-act go" data-go="mentor_li">✉️ 私信导师</span>'
+                            : '<span class="cm-act go" data-go="user">💬 交流</span>')) +
+                    '<span class="cm-act report" data-act="report">🚩 举报</span>' +
+                    '</div></div>';
+            }).join('');
+
+            Array.prototype.forEach.call(list.querySelectorAll('.cm-act'), function (act) {
+                act.addEventListener('click', function () {
+                    var post = act.closest('.cm-post');
+                    var id = post.getAttribute('data-id');
+                    var actName = act.getAttribute('data-act');
+                    var go = act.getAttribute('data-go');
+                    if (actName === 'like') likePost(id, act);
+                    else if (actName === 'report') toast('已举报，管理员将尽快处理 🚩');
+                    else if (go) {
+                        toast(go === 'ai' ? '正在请王半仙 AI 出山…' : '正在打开对话…');
+                        setTimeout(function () { location.href = 'chat.html?to=' + go; }, 300);
+                    }
+                    else toast('评论功能开发中，先和王半仙 AI 聊聊 💬');
+                });
+            });
+        }
+
+        /* 点赞 */
+        function likePost(id, btn) {
+            if (btn.classList.contains('liked')) return;
+            fetch(window.API_BASE + '/api/posts/' + encodeURIComponent(id) + '/like', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ client_key: clientKey }),
+            }).then(function (r) { return r.json().catch(function () { return {}; }); })
+            .then(function (d) {
+                if (d.ok) { btn.classList.add('liked'); btn.innerHTML = '♥ <span>' + d.likes + '</span>'; }
+                else if (d.liked) { btn.classList.add('liked'); toast('已经赞过啦'); }
+            }).catch(function () { toast('网络异常'); });
+        }
+
+        /* ===== 发帖 overlay ===== */
+        var pubType = 'talk';
+        function openComposer() {
+            if (!window.QituAuth || !QituAuth.isLoggedIn()) {
+                toast('发帖需先登录');
+                if (window.QituAuth) QituAuth.requireLogin('energy.html');
+                return;
+            }
+            $('cmComposer').classList.add('show');
+            $('cmTitle').value = '';
+            $('cmContent').value = '';
+            $('cmErr').textContent = '';
+            updateSummaryPreview();
+        }
+        $('cmPub').addEventListener('click', openComposer);
+        $('cmClose').addEventListener('click', function () { $('cmComposer').classList.remove('show'); });
+        $('cmComposer').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+
+        Array.prototype.forEach.call(document.querySelectorAll('#cmTypes .cm-cp-type'), function (t) {
+            t.addEventListener('click', function () {
+                Array.prototype.forEach.call(document.querySelectorAll('#cmTypes .cm-cp-type'), function (x) { x.classList.remove('on'); });
+                t.classList.add('on');
+                pubType = t.getAttribute('data-type');
+            });
+        });
+
+        /* 命盘摘要（脱敏：仅职业原型 + 五行） */
+        function getMySummary() {
+            try {
+                var raw = sessionStorage.getItem('reportData');
+                if (!raw) return null;
+                var d = JSON.parse(raw);
+                var meme = d.meme_card || (d.analysis && d.analysis.meme_card) || {};
+                var fe = (d.chart && d.chart.five_elements && d.chart.five_elements.percent) || {};
+                var five = [];
+                var order = ['金', '木', '水', '火', '土'];
+                for (var i = 0; i < order.length; i++) {
+                    var w = order[i];
+                    if (fe[w] != null) five.push(w + Math.round(fe[w]));
+                }
+                var text = '职业原型：' + (meme.name || '命途') + (meme.code ? ' · ' + meme.code : '');
+                if (five.length) text += '｜五行：' + five.join(' ');
+                return text;
+            } catch (e) { return null; }
+        }
+        function updateSummaryPreview() {
+            var prev = $('cmSummaryPrev');
+            if ($('cmSummaryCb').checked) {
+                var s = getMySummary();
+                if (s) { prev.textContent = '将附带：' + s; prev.classList.add('show'); }
+                else { prev.textContent = '暂无可用的命盘摘要，先去生成报告吧'; prev.classList.add('show'); }
+            } else { prev.classList.remove('show'); }
+        }
+        $('cmSummaryCb').addEventListener('change', updateSummaryPreview);
+
+        /* 发送 */
+        $('cmSend').addEventListener('click', function () {
+            var content = $('cmContent').value.trim();
+            if (!content) { $('cmErr').textContent = '写点什么再发吧'; return; }
+            $('cmErr').textContent = '';
+            var btn = $('cmSend');
+            btn.disabled = true; btn.textContent = '发送中…';
+            var title = $('cmTitle').value.trim();
+            var allowMentor = $('cmAllowMentor').checked;
+            var mySummary = ($('cmSummaryCb').checked ? getMySummary() : null) || '';
+            var memeCode = '';
+            var memeName = '';
+            if (mySummary) {
+                try {
+                    var d = JSON.parse(sessionStorage.getItem('reportData'));
+                    var meme = d.meme_card || (d.analysis && d.analysis.meme_card) || {};
+                    memeCode = meme.code || '';
+                    memeName = meme.name || '';
+                } catch (e) {}
+            }
+            // 匿名：默认不传真实昵称
+            QituAuth.authFetch('/api/posts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nickname: '匿名用户',
+                    content: content,
+                    client_key: clientKey,
+                    meme_code: memeCode,
+                    meme_name: memeName,
+                    allow_mentor: allowMentor,
+                }),
+            }).then(function (r) { return r.json().catch(function () { return {}; }); })
+            .then(function (d) {
+                if (d.ok || d.post_id || d.id) {
+                    var pid = d.post_id || d.id || ('local_' + Date.now());
+                    saveMeta(pid, { type: pubType, title: title });
+                    $('cmComposer').classList.remove('show');
+                    toast('发布成功 ✨');
+                    loadPosts();
+                } else {
+                    $('cmErr').textContent = d.detail || '发布失败';
+                }
+            }).catch(function () { $('cmErr').textContent = '网络异常，请重试'; })
+            .then(function () { btn.disabled = false; btn.textContent = '发 送'; });
+        });
+
+        /* 标签切换 */
+        Array.prototype.forEach.call(document.querySelectorAll('#cmChips .cm-chip'), function (chip) {
+            chip.addEventListener('click', function () {
+                Array.prototype.forEach.call(document.querySelectorAll('#cmChips .cm-chip'), function (x) { x.classList.remove('on'); });
+                chip.classList.add('on');
+                curTab = chip.getAttribute('data-tab');
+                render();
+            });
+        });
+
+        loadPosts();
+    })();
+    </script>
+    <script src="js/glow-orb.js?v=1"></script>
+    <script src="js/tabbar.js?v=3"></script>
+</body>
+</html>

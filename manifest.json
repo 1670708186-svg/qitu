@@ -1,0 +1,41 @@
+{
+  "name": "启途 · 溯禀赋之源，启职业之途",
+  "short_name": "启途",
+  "description": "AI 命理职业导航：溯源天赋禀赋，导航职业之路。",
+  "id": "index.html",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#08080c",
+  "theme_color": "#08080c",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "img/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icons/icon-192.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "测职场天赋",
+      "short_name": "天赋",
+      "url": "index.html",
+      "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "每日能量",
+      "short_name": "能量",
+      "url": "energy.html",
+      "icons": [{ "src": "img/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
