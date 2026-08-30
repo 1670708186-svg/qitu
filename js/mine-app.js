@@ -51,12 +51,13 @@
   };
   // GRI 月度时机引擎：信号 / 专属词 / 触发条件 / 行动指令 / 权重区间
   // 术语原则：只有"进财"场景用「矿」，其它用 窗口/波段/共振/期
+  // explain 为详细建议文案（后期填充，非空时本月建议卡自动展开显示）
   var MONTH_LEVELS = [
-    { k: 'rich', nm: '暴富矿', word: '矿', em: '🥇', c: '#e9c46a', trigger: '偏财+食伤', act: '短线变现，联系提成客户。', range: [75, 95] },
-    { k: 'promo', nm: '晋升窗口', word: '窗口', em: '🚀', c: '#8ba8d8', trigger: '官印相生', act: '汇报带解决方案。', range: [80, 92] },
-    { k: 'idea', nm: '灵感波段', word: '波段', em: '🧠', c: '#b8aee8', trigger: '伤官佩印', act: '把新框架写进PPT。', range: [65, 85] },
-    { k: 'net', nm: '人脉共振', word: '共振', em: '🤝', c: '#7fb8a8', trigger: '比劫+合局', act: '约客户喝咖啡，聊兴趣。', range: [60, 80] },
-    { k: 'steady', nm: '稳固期', word: '期', em: '⛰️', c: 'rgba(255,255,255,.32)', trigger: '财官双美', act: '签约、谈判、长期合同。', range: [55, 75] }
+    { k: 'rich', nm: '暴富矿', word: '矿', em: '🥇', c: '#e9c46a', trigger: '偏财+食伤', act: '短线变现，联系提成客户。', range: [75, 95], explain: '' },
+    { k: 'promo', nm: '晋升窗口', word: '窗口', em: '🚀', c: '#8ba8d8', trigger: '官印相生', act: '汇报带解决方案。', range: [80, 92], explain: '' },
+    { k: 'idea', nm: '灵感波段', word: '波段', em: '🧠', c: '#b8aee8', trigger: '伤官佩印', act: '把新框架写进PPT。', range: [65, 85], explain: '' },
+    { k: 'net', nm: '人脉共振', word: '共振', em: '🤝', c: '#7fb8a8', trigger: '比劫+合局', act: '约客户喝咖啡，聊兴趣。', range: [60, 80], explain: '' },
+    { k: 'steady', nm: '稳固期', word: '期', em: '⛰️', c: 'rgba(255,255,255,.32)', trigger: '财官双美', act: '签约、谈判、长期合同。', range: [55, 75], explain: '' }
   ];
   var ACTS = {
     rich: ['主动谈大单 / 追回款', '启动副业或接高价值项目', '大胆提一次涨薪'],
@@ -366,6 +367,7 @@
       '<div class="mt-score ' + gradeColor + '">GRI <b>' + s.score + '</b></div>' +
       '</div>' +
       '<div class="mt-act">→ ' + lv.act + '</div>' +
+      (lv.explain ? '<div class="mt-explain">' + lv.explain + '</div>' : '') +
       '</div>';
   }
 
