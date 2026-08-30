@@ -811,6 +811,11 @@
     // 社区跳转参数：?to=ai / ?to=mentor_li / ?to=user_x
     var to = new URLSearchParams(location.search).get('to');
     var type = new URLSearchParams(location.search).get('type');
+    // 对话页背景星灵球动效（共用组件，55vw 氛围底，透明度 0.28 由 CSS 控制）
+    var cob = document.getElementById('chatOrbCanvas');
+    if (cob && window.SpiritOrb) {
+      setTimeout(function () { window.SpiritOrb.create(cob, { particles: 22, rings: 3 }); }, 80);
+    }
     renderList();
     bindEvents();
     if (to) {

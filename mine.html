@@ -284,7 +284,7 @@
             // 灵体效果（图1风格：蓝紫涟漪 + 中心柔光 + 环绕粒子）
             var oc = document.getElementById('emptyOrb');
             if (oc && window.SpiritOrb) {
-                setTimeout(function () { window.SpiritOrb.create(oc); }, 50);
+                setTimeout(function () { window.SpiritOrb.create(oc, { particles: 10, rings: 3 }); }, 50);
             }
             return;   // 无报告时原模块留空，新增矿脉地图展示示例数据
         }

@@ -396,7 +396,7 @@ select.form-input option, select.field-input option { background: #1a2226; color
 }
 .sp-legal {
   position: absolute; bottom: 20px; left: 0; right: 0; text-align: center;
-  font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,.25); z-index: 4; pointer-events: none;
+  font-size: 10px; letter-spacing: 1px; color: rgba(255,255,255,.18); z-index: 4; pointer-events: none;
 }
 /* 占位层（loader 时由 opening.js 火花 canvas 呈现） */
 .sp-orb-zone {
@@ -404,25 +404,36 @@ select.form-input option, select.field-input option { background: #1a2226; color
 }
 /* 入口屏（屏1） */
 .sp-gate { cursor: pointer; }
+/* 加载页星灵球动效：直径=屏宽55%，居中垂直位置保持（原中心约在屏高44%） */
+.loader-orb {
+  position: absolute; left: 50%; top: 44%; transform: translate(-50%, -50%);
+  width: 55vw; height: 55vw; max-width: 520px; max-height: 520px;
+  z-index: 2; pointer-events: none;
+}
+/* 星灵球动效：居中偏上（发光蓝白球 + 三层轨道 + 星尘） */
+.gate-orb {
+  position: absolute; left: 50%; top: 19%; transform: translateX(-50%);
+  width: 190px; height: 190px; z-index: 2; pointer-events: none;
+}
 .sp-gate-inner {
-  position: absolute; left: 0; right: 0; top: 56%; transform: translateY(-50%);
+  position: absolute; left: 0; right: 0; top: 62%; transform: translateY(-50%);
   text-align: center; padding: 0 36px;
 }
 .sp-gate-title {
-  margin: 0; font-size: 27px; font-weight: 300; letter-spacing: 7px; line-height: 2;
-  color: rgba(255,255,255,.95); text-indent: 7px;
-  text-shadow: 0 0 40px rgba(184, 174, 232, 0.28);
+  margin: 0; font-size: 28px; font-weight: 300; letter-spacing: 7px; line-height: 1.9;
+  color: rgba(255,255,255,.96); text-indent: 7px;
+  text-shadow: 0 0 40px rgba(184, 174, 232, 0.30);
 }
 .sp-gate-sub {
-  margin: 24px auto 0; font-size: 12.5px; line-height: 2.1;
-  color: rgba(255,255,255,.44); letter-spacing: 1.5px; max-width: 260px; text-align: left;
+  margin: 22px auto 0; font-size: 14px; line-height: 1.8;
+  color: rgba(255,255,255,0.4); letter-spacing: 1.2px; max-width: 300px; text-align: center;
 }
 .sp-gate-hint {
   position: absolute; bottom: 15%; left: 0; right: 0; text-align: center;
-  font-size: 11px; letter-spacing: 3px; color: rgba(255,255,255,.38);
+  font-size: 11px; letter-spacing: 3px; color: rgba(255,255,255,.28);
   animation: hintPulse 2.8s ease-in-out infinite;
 }
-@keyframes hintPulse { 0%, 100% { opacity: .3 } 50% { opacity: .8 } }
+@keyframes hintPulse { 0%, 100% { opacity: .3 } 50% { opacity: .75 } }
 
 /* ══════════ v3 首页表单（弥散卡） ══════════ */
 .v3-hero { text-align: center; padding: 1.6rem 1rem 0.8rem; }
@@ -599,6 +610,8 @@ select.form-input option, select.field-input option { background: #1a2226; color
 .sp-loader-text { left: 8%; max-width: 42%; }
 @media (max-width: 420px) {
   .sp-loader-text { left: 6%; max-width: 50%; }
+  .gate-orb { width: 150px; height: 150px; top: 16%; }
+  .sp-gate-sub { font-size: 13px; max-width: 260px; }
 }
 
 /* ══════════ 启动屏 · 星芒主视觉（白色火花放射 + 深空蓝黑底，无光球） ══════════ */

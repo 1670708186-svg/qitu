@@ -22,7 +22,9 @@
     <!-- ══════════ 屏 0 · 启动动画（星芒主视觉：白色火花放射 + 深空蓝黑底，无光球） ══════════ -->
     <section class="sp-screen active" id="spLoader">
         <canvas id="nebulaCanvas"></canvas>
-        <div class="sp-orb-zone"></div>
+        <div class="sp-orb-zone">
+            <canvas id="loaderOrbCanvas" class="loader-orb"></canvas>
+        </div>
 
         <!-- 发散光芒层（由 opening.js 白色火花放射呈现，圆球元素已移除） -->
         <div class="sp-rays" id="spRays" aria-hidden="true">
@@ -38,12 +40,14 @@
 
     <!-- ══════════ 屏 1 · 星际入口 ══════════ -->
     <section class="sp-screen sp-gate" id="spGate">
-        <div class="sp-orb-zone"></div>
+        <div class="sp-orb-zone">
+            <canvas id="gateOrbCanvas" class="gate-orb"></canvas>
+        </div>
         <div class="sp-gate-inner">
             <h1 class="sp-gate-title">溯禀赋之源<br>启职业之途</h1>
             <p class="sp-gate-sub" id="gateSub"></p>
         </div>
-        <div class="sp-gate-hint">轻触任意位置 · 唤醒王半仙</div>
+        <div class="sp-gate-hint">轻触任意位置 · 唤醒半仙</div>
         <div class="sp-legal">命理内容仅供传统文化研究与娱乐参考</div>
     </section>
 
@@ -196,6 +200,12 @@
                 window.Opening.audio.fadeOut();
             }
             window.Spirit && window.Spirit.setMode('ambient');
+            // 启动星灵球动效（发光蓝白球 + 三层轨道 + 星尘粒子）
+            var gob = document.getElementById('gateOrbCanvas');
+            if (gob && window.SpiritOrb && !gob.dataset.started) {
+                gob.dataset.started = '1';
+                setTimeout(function () { window.SpiritOrb.create(gob, { particles: 26, rings: 3 }); }, 60);
+            }
             if (!$('gateSub').textContent) {
                 typewriter($('gateSub'), '人生没有AB剧，没有存档回档，也没有平行世界供你试错不同职业结局。\n我王半仙不替你改写命运，只帮你看懂手里与生俱来的底牌。', 42);
             }
@@ -205,6 +215,11 @@
         // 主视觉时间线：白色火花爆发 + 正在链接高维 → 进入入口屏
         window.Spirit && window.Spirit.setMode('loaderWhite');
         typewriter($('loaderText'), LOADER_LINE, 55);
+        // 加载页星灵球动效（共用组件：直径=屏宽55%，保持居中垂直位置）
+        var lob = document.getElementById('loaderOrbCanvas');
+        if (lob && window.SpiritOrb) {
+            setTimeout(function () { window.SpiritOrb.create(lob, { particles: 24, rings: 3 }); }, 30);
+        }
         if (window.Opening) {
             window.Opening.nebulaStart();
             window.Opening.startTimeline(function () {

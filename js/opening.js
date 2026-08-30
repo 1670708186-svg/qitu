@@ -24,68 +24,88 @@
     opts = opts || {};
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     var ctx = canvas.getContext('2d');
-    var W = 0, H = 0, R = 0, particles = [], raf = 0, t0 = 0;
+    var W = 0, H = 0, R = 0, particles = [], raf = 0;
     var rings = opts.rings != null ? opts.rings : 3;
-    var ringColor = opts.ringColor || '140,160,235';
-    var coreColor = opts.coreColor || '255,255,255';
-    var particleN = opts.particles != null ? opts.particles : 12;
+    var ringColor = opts.ringColor || '170,190,240';     // 轨道淡蓝
+    var coreHi = opts.coreHi || '255,255,255';          // 亮白核心
+    var coreMid = opts.coreMid || '165,195,255';        // 淡蓝
+    var coreDeep = opts.coreDeep || '110,75,200';       // 深紫
+    var particleN = opts.particles != null ? opts.particles : 22;
+    var ringAlphas = opts.ringAlphas || [0.34, 0.20, 0.11];  // 由内向外递减
+    var ringRadii = opts.ringRadii || [0.55, 0.78, 1.0];     // 三层轨道（最外=canvas 半径）
+    var radiusScale = opts.radiusScale != null ? opts.radiusScale : 0.5;  // R=min(W,H)*scale
     function resize() {
       var r = canvas.getBoundingClientRect();
       W = canvas.width = Math.max(8, Math.round(r.width * dpr));
       H = canvas.height = Math.max(8, Math.round(r.height * dpr));
-      R = Math.min(W, H) * 0.18;
+      R = Math.min(W, H) * radiusScale;
       particles = [];
       for (var i = 0; i < particleN; i++) {
         particles.push({
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.0004 + Math.random() * 0.0006,
-          dist: 0.5 + Math.random() * 0.7,
-          baseA: 0.4 + Math.random() * 0.4
+          a: Math.random() * Math.PI * 2,                          // 角度
+          speed: (0.15 + Math.random() * 0.5) * (Math.random() > 0.5 ? 1 : -1) * 0.0016,
+          band: 0.4 + Math.random() * 0.65,                       // 轨道带（0.4R~1.05R）
+          drift: (Math.random() - 0.5) * 0.35,                    // 径向漂移幅度
+          ph: Math.random() * Math.PI * 2,                        // 漂移相位
+          baseA: 0.35 + Math.random() * 0.45,                     // 亮度
+          r: 1.1 + Math.random() * 1.5,                           // 光点半径
+          jump: Math.random() < 0.35                              // 是否跳跃型
         });
       }
     }
     function draw(t) {
       if (!canvas.isConnected) { cancelAnimationFrame(raf); return; }
-      t0 = t;
       ctx.clearRect(0, 0, W, H);
       var cx = W / 2, cy = H / 2;
-      var haloR = R * 1.4;
-      var haloG = ctx.createRadialGradient(cx, cy, R * 0.15, cx, cy, haloR);
-      haloG.addColorStop(0, 'rgba(150,140,235,0)');
-      haloG.addColorStop(0.6, 'rgba(124,107,214,0.12)');
-      haloG.addColorStop(1, 'rgba(60,40,120,0)');
+      var breathe = 0.5 + 0.5 * Math.sin(t * 0.0016);            // 整体呼吸 0~1
+      // 深紫外晕（半透明，随呼吸明暗）
+      var haloR = R * 1.5;
+      var haloG = ctx.createRadialGradient(cx, cy, R * 0.2, cx, cy, haloR);
+      haloG.addColorStop(0, 'rgba(120,85,220,' + (0.10 + 0.05 * breathe).toFixed(3) + ')');
+      haloG.addColorStop(0.55, 'rgba(120,85,220,0.06)');
+      haloG.addColorStop(1, 'rgba(60,30,140,0)');
       ctx.fillStyle = haloG;
       ctx.beginPath(); ctx.arc(cx, cy, haloR, 0, Math.PI * 2); ctx.fill();
-      for (var w = 0; w < rings; w++) {
-        var phase = ((t * 0.0006 + w / rings) % 1);
-        var ringR = R * 0.6 + phase * (R * 1.3);
-        var ringA = 0.6 * (1 - phase) * (1 - phase);
+      // 三层同心圆轨道：透明度由内向外递减 + 呼吸
+      for (var w = 0; w < rings && w < ringRadii.length; w++) {
+        var rr = ringRadii[w] * R;
+        var ra = ringAlphas[w] * (0.75 + 0.25 * breathe);
         ctx.beginPath();
-        ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(' + ringColor + ',' + ringA.toFixed(3) + ')';
-        ctx.lineWidth = 1.2;
+        ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(' + ringColor + ',' + ra.toFixed(3) + ')';
+        ctx.lineWidth = w === 0 ? 1.4 : 1;
         ctx.stroke();
       }
-      var coreR = R * 0.5 * (0.9 + 0.1 * Math.sin(t * 0.004));
+      // 核心灵球：亮白 → 淡蓝 → 深紫 半透明渐变（呼吸）
+      var coreR = R * 0.52 * (0.92 + 0.08 * breathe);
       var cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
-      cg.addColorStop(0, 'rgba(' + coreColor + ',0.85)');
-      cg.addColorStop(0.4, 'rgba(' + coreColor + ',0.30)');
-      cg.addColorStop(1, 'rgba(' + coreColor + ',0)');
+      cg.addColorStop(0, 'rgba(' + coreHi + ',0.95)');
+      cg.addColorStop(0.35, 'rgba(' + coreMid + ',0.55)');
+      cg.addColorStop(0.7, 'rgba(' + coreDeep + ',0.22)');
+      cg.addColorStop(1, 'rgba(' + coreDeep + ',0)');
       ctx.fillStyle = cg;
       ctx.beginPath(); ctx.arc(cx, cy, coreR, 0, Math.PI * 2); ctx.fill();
+      // 星尘粒子：轨道带内缓慢旋转 + 部分来回飘散跳跃 + 闪烁
       for (var k = 0; k < particles.length; k++) {
         var p = particles[k];
-        p.phase += p.speed * 16;
-        var a = p.phase;
-        var d = p.dist * R;
-        var px = cx + Math.cos(a) * d;
-        var py = cy + Math.sin(a) * d;
-        var pa = p.baseA * (0.55 + 0.45 * Math.sin(t * 0.003 + k * 1.7));
-        var pg = ctx.createRadialGradient(px, py, 0, px, py, 2.4);
-        pg.addColorStop(0, 'rgba(' + coreColor + ',' + pa.toFixed(3) + ')');
-        pg.addColorStop(1, 'rgba(' + coreColor + ',0)');
+        p.a += p.speed;
+        if (p.jump && Math.random() < 0.05) {
+          p.a += (Math.random() - 0.5) * 1.4;                 // 跳跃：角度突变
+          p.band += (Math.random() - 0.5) * 0.18;             // 径向抖动
+          if (p.band < 0.4) p.band = 0.4;
+          if (p.band > 1.35) p.band = 1.35;
+        }
+        p.ph += 0.004;
+        var d = p.band * R + p.drift * R * Math.sin(p.ph);   // 来回飘散
+        var px = cx + Math.cos(p.a) * d;
+        var py = cy + Math.sin(p.a) * d;
+        var tw = 0.5 + 0.5 * Math.sin(t * 0.003 + p.ph * 3); // 闪烁
+        var pa = p.baseA * (0.35 + 0.65 * tw);
+        var pg = ctx.createRadialGradient(px, py, 0, px, py, p.r);
+        pg.addColorStop(0, 'rgba(' + coreMid + ',' + pa.toFixed(3) + ')');
+        pg.addColorStop(1, 'rgba(' + coreMid + ',0)');
         ctx.fillStyle = pg;
-        ctx.beginPath(); ctx.arc(px, py, 2.4, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(px, py, p.r, 0, Math.PI * 2); ctx.fill();
       }
       raf = requestAnimationFrame(draw);
     }
@@ -152,45 +172,7 @@
       nctx.lineTo(x2, y2);
       nctx.stroke();
     }
-    // 中心柔光（无实体边：渐变渐隐）+ 环绕小粒子
-    var coreR = (2.2 + 0.6 * Math.sin(t * 0.004)) * 2.6;
-    var cg = nctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
-    cg.addColorStop(0, 'rgba(255,255,255,0.85)');
-    cg.addColorStop(0.4, 'rgba(255,255,255,0.30)');
-    cg.addColorStop(1, 'rgba(255,255,255,0)');
-    nctx.fillStyle = cg;
-    nctx.beginPath(); nctx.arc(cx, cy, coreR, 0, Math.PI * 2); nctx.fill();
-    // 环绕小粒子（柔光小球，缓慢绕行）
-    for (var k = 0; k < 12; k++) {
-      var pa = t * 0.0004 + k * Math.PI * 2 / 12;
-      var pd = 13 + 6 * Math.sin(t * 0.001 + k * 1.5);
-      var ppx = cx + Math.cos(pa) * pd;
-      var ppy = cy + Math.sin(pa) * pd;
-      var pg = nctx.createRadialGradient(ppx, ppy, 0, ppx, ppy, 2.4);
-      pg.addColorStop(0, 'rgba(255,255,255,' + (0.5 + 0.3 * Math.sin(t * 0.003 + k * 1.7)) + ')');
-      pg.addColorStop(1, 'rgba(255,255,255,0)');
-      nctx.fillStyle = pg;
-      nctx.beginPath(); nctx.arc(ppx, ppy, 2.4, 0, Math.PI * 2); nctx.fill();
-    }
-    // 灵体光晕涟漪：3 层同心蓝紫光环缓慢扩散+回缩
-    for (var w = 0; w < 3; w++) {
-      var phase = (t * 0.0006 + w / 3) % 1;            // 0→1 循环
-      var ringR = 24 + phase * (R * 0.95);              // 半径随相位扩散
-      var ringA = 0.55 * (1 - phase) * (1 - phase);    // 越外越淡（二次衰减）
-      nctx.beginPath();
-      nctx.arc(cx, cy, ringR, 0, Math.PI * 2);
-      nctx.strokeStyle = 'rgba(140,160,235,' + ringA.toFixed(3) + ')';
-      nctx.lineWidth = 1.2;
-      nctx.stroke();
-    }
-    // 静态柔光外晕（蓝紫调，图1主色）
-    var haloR = R * 0.95;
-    var haloG = nctx.createRadialGradient(cx, cy, R * 0.15, cx, cy, haloR);
-    haloG.addColorStop(0, 'rgba(150,140,235,0)');
-    haloG.addColorStop(0.6, 'rgba(124,107,214,0.08)');
-    haloG.addColorStop(1, 'rgba(60,40,120,0)');
-    nctx.fillStyle = haloG;
-    nctx.beginPath(); nctx.arc(cx, cy, haloR, 0, Math.PI * 2); nctx.fill();
+    // 中心发光体/轨道/星尘由独立星灵球 canvas（loader-orb）呈现，这里只保留火花放射
     nebulaRAF = requestAnimationFrame(drawSpark);
   }
   function nebulaStart() { spinning = true; nebulaInit(); requestAnimationFrame(drawSpark); }
