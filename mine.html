@@ -92,6 +92,20 @@
         .pick-card .pc-quote { font-size: 0.76rem; color: var(--text-dim); line-height: 1.8; margin-top: 0.35rem; letter-spacing: .5px; }
         .pick-card .pc-quote b { color: #e9c46a; font-weight: 500; }
         .pick-card .pc-btn { display: block; width: 100%; height: 42px; margin-top: 0.8rem; border: 1px solid rgba(233,196,106,.5); border-radius: 999px; background: rgba(233,196,106,.12); color: #e9c46a; font-size: 0.78rem; letter-spacing: 3px; cursor: pointer; }
+        /* ═══ 本月建议卡（GRI 月度时机引擎） ═══ */
+        .mt-main { display: flex; align-items: center; gap: 0.7rem; margin-top: 0.7rem; }
+        .mt-emoji { font-size: 1.9rem; filter: drop-shadow(0 0 12px rgba(233,196,106,.55)); flex-shrink: 0; }
+        .mt-info { flex: 1; min-width: 0; }
+        .mt-title { font-size: 1rem; color: #f2f0f7; letter-spacing: 1px; }
+        .mt-title .mt-word { font-style: normal; font-size: 0.66rem; color: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.2); border-radius: 999px; padding: 1px 8px; margin-left: 0.4rem; vertical-align: 2px; }
+        .mt-trigger { font-size: 0.74rem; color: var(--text-dim); margin-top: 0.22rem; letter-spacing: .5px; }
+        .mt-score { flex-shrink: 0; text-align: center; font-size: 0.66rem; color: var(--text-dim); letter-spacing: 1px; }
+        .mt-score b { display: block; font-size: 1.25rem; font-weight: 600; letter-spacing: 0; }
+        .mt-score.gold b { color: #e9c46a; } .mt-score.blue b { color: #8ba8d8; }
+        .mt-score.violet b { color: #b8aee8; } .mt-score.teal b { color: #7fb8a8; }
+        .mt-score.gray b { color: rgba(255,255,255,.5); }
+        .mt-act { margin-top: 0.7rem; padding: 0.65rem 0.8rem; border-radius: 12px; background: rgba(233,196,106,.08);
+            border: 1px solid rgba(233,196,106,.22); font-size: 0.8rem; color: #e9c46a; letter-spacing: 1px; line-height: 1.7; }
         .pop-mask { position: fixed; inset: 0; z-index: 220; display: flex; align-items: center; justify-content: center;
             background: rgba(5,6,10,.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
             opacity: 0; pointer-events: none; transition: opacity .3s; }
@@ -169,8 +183,9 @@
                 <div class="sec-label"><span>月度时机 · GRI 指数</span><span class="hint">点击节点查看行动指令</span></div>
                 <svg id="monthChart" class="line-chart" viewBox="0 0 720 300"></svg>
                 <div class="legend" id="monthLegend"></div>
-                <div class="chart-tip">● 柔金=暴富矿 · 青蓝=晋升窗口 · 紫=灵感波段 · 柔绿=人脉共振 · 灰=稳固期</div>
+                <div class="chart-tip">🥇暴富矿=偏财+食伤 · 🚀晋升窗口=官印相生 · 🧠灵感波段=伤官佩印 · 🤝人脉共振=比劫+合局 · ⛰️稳固期=财官双美（仅进财用「矿」）</div>
             </div>
+            <div id="monthTipCard"></div>   <!-- 新增：本月建议（对应当前月 GRI 信号） -->
         </div>
 
         <div class="disclaimer">矿脉内容基于传统五行、大运流年等文化元素推演，仅供传统文化研究与娱乐参考。</div>

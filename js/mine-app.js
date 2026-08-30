@@ -49,12 +49,14 @@
     B: '平稳中藏着机会，选对方向就能把矿挖到。别冒进，看准一个点深挖。',
     C: '蓄力之年，别急着爆发。把技能磨利、把人脉养熟，稳住就是胜利。'
   };
+  // GRI 月度时机引擎：信号 / 专属词 / 触发条件 / 行动指令 / 权重区间
+  // 术语原则：只有"进财"场景用「矿」，其它用 窗口/波段/共振/期
   var MONTH_LEVELS = [
-    { k: 'rich', nm: '暴富矿', c: '#e9c46a', ds: '财运最旺的波段，主动谈大单、追回款、谈涨薪，容易有实际进账。' },
-    { k: 'promo', nm: '晋升窗口', c: '#8ba8d8', ds: '事业运势抬头，适合汇报成果、准备述职、争取带项目，上级更容易看见你。' },
-    { k: 'idea', nm: '灵感波段', c: '#b8aee8', ds: '直觉与创意在线，适合头脑风暴、写方案、学新技能、更新作品集。' },
-    { k: 'net', nm: '人脉共振', c: '#7fb8a8', ds: '社交能量强，适合约老友、参加行业活动、联系导师，贵人可能在聊天里。' },
-    { k: 'steady', nm: '稳固期', c: 'rgba(255,255,255,.32)', ds: '运势平缓，宜低调深耕、整理手头事项、储蓄蓄力，不宜冒险。' }
+    { k: 'rich', nm: '暴富矿', word: '矿', em: '🥇', c: '#e9c46a', trigger: '偏财+食伤', act: '短线变现，联系提成客户。', range: [75, 95] },
+    { k: 'promo', nm: '晋升窗口', word: '窗口', em: '🚀', c: '#8ba8d8', trigger: '官印相生', act: '汇报带解决方案。', range: [80, 92] },
+    { k: 'idea', nm: '灵感波段', word: '波段', em: '🧠', c: '#b8aee8', trigger: '伤官佩印', act: '把新框架写进PPT。', range: [65, 85] },
+    { k: 'net', nm: '人脉共振', word: '共振', em: '🤝', c: '#7fb8a8', trigger: '比劫+合局', act: '约客户喝咖啡，聊兴趣。', range: [60, 80] },
+    { k: 'steady', nm: '稳固期', word: '期', em: '⛰️', c: 'rgba(255,255,255,.32)', trigger: '财官双美', act: '签约、谈判、长期合同。', range: [55, 75] }
   ];
   var ACTS = {
     rich: ['主动谈大单 / 追回款', '启动副业或接高价值项目', '大胆提一次涨薪'],
@@ -267,20 +269,21 @@
     });
   }
 
-  /* ============ 月度时机 ============ */
+  /* ============ 月度时机（GRI 引擎） ============ */
   function monthSeries() {
     var months = [];
     for (var m = 1; m <= 12; m++) {
       var r = stable('m' + m, m * 3);
       var lv;
-      if (r > 0.9) lv = MONTH_LEVELS[0];        // 暴富
-      else if (r > 0.72) lv = MONTH_LEVELS[1];  // 晋升
-      else if (r > 0.52) lv = MONTH_LEVELS[2];  // 灵感
-      else if (r > 0.34) lv = MONTH_LEVELS[3];  // 人脉
-      else lv = MONTH_LEVELS[4];                // 稳固
-      var score = 45 + Math.floor(stable('v' + m, m) * 55);
-      if (lv.k === 'steady') score = 40 + Math.floor(stable('v' + m, m) * 18);
-      months.push({ m: m, lv: lv, score: score });
+      if (r > 0.9) lv = MONTH_LEVELS[0];        // 暴富矿
+      else if (r > 0.72) lv = MONTH_LEVELS[1];  // 晋升窗口
+      else if (r > 0.52) lv = MONTH_LEVELS[2];  // 灵感波段
+      else if (r > 0.34) lv = MONTH_LEVELS[3];  // 人脉共振
+      else lv = MONTH_LEVELS[4];                // 稳固期
+      // GRI 权重区间内取值
+      var lo = lv.range[0], hi = lv.range[1];
+      var score = lo + Math.floor(stable('v' + m, m) * (hi - lo + 1));
+      months.push({ m: m, lv: lv, score: Math.max(lo, Math.min(hi, score)) });
     }
     return months;
   }
@@ -308,12 +311,13 @@
 
     series.forEach(function (s, i) {
       var x = X(i), y = Y(s.score);
-      var c = s.lv.c;
-      var em = { rich: '💰', promo: '📈', idea: '💡', net: '🤝', steady: '🧘' }[s.lv.k];
-      var glow = s.lv.k === 'rich' ? ' style="filter:drop-shadow(0 0 8px rgba(233,196,106,.8))"' : '';
+      var lv = s.lv;
+      var c = lv.c;
+      var em = lv.em;
+      var glow = lv.k === 'rich' ? ' style="filter:drop-shadow(0 0 8px rgba(233,196,106,.8))"' : '';
       g += '<g class="m-node" data-m="' + s.m + '" style="cursor:pointer">' +
         '<circle cx="' + x + '" cy="' + y + '" r="11" fill="transparent"/>' +
-        '<circle cx="' + x + '" cy="' + y + '" r="' + (s.lv.k === 'steady' ? 4.5 : 6) + '" fill="' + c + '" stroke="rgba(255,255,255,.25)" stroke-width="1"' + glow + '/>' +
+        '<circle cx="' + x + '" cy="' + y + '" r="' + (lv.k === 'steady' ? 4.5 : 6) + '" fill="' + c + '" stroke="rgba(255,255,255,.25)" stroke-width="1"' + glow + '/>' +
         '<text x="' + x + '" y="' + (y - 12) + '" text-anchor="middle" font-size="13">' + em + '</text>' +
         '<text x="' + x + '" y="' + (padT + plotH + 22) + '" text-anchor="middle" font-size="11" fill="rgba(255,255,255,.42)">' + s.m + '月</text>' +
         '</g>';
@@ -321,7 +325,7 @@
 
     monthChart.innerHTML = g;
     $('monthLegend').innerHTML = MONTH_LEVELS.map(function (lv) {
-      return '<span class="lg"><i style="background:' + lv.c + '"></i>' + lv.nm + '</span>';
+      return '<span class="lg"><i style="background:' + lv.c + '"></i>' + lv.em + ' ' + lv.nm + '</span>';
     }).join('');
 
     Array.prototype.forEach.call(monthChart.querySelectorAll('.m-node'), function (node) {
@@ -329,13 +333,40 @@
         var m = parseInt(node.getAttribute('data-m'), 10);
         var s = series.filter(function (x) { return x.m === m; })[0];
         if (!s) return;
-        var em = { rich: '💰', promo: '📈', idea: '💡', net: '🤝', steady: '🧘' }[s.lv.k];
-        var sig = '<div class="sig">信号：<b>' + s.lv.nm + '</b> · GRI ' + s.score + '　' + s.lv.ds + '</div>';
-        var acts = '<div class="acts">' + ACTS[s.lv.k].map(function (a) { return '<span class="ac">' + a + '</span>'; }).join('') + '</div>';
+        var lv = s.lv;
+        var sig = '<div class="sig">信号：<b>' + lv.em + ' ' + lv.nm + '</b>（专属词「' + lv.word + '」）· 触发条件：<b>' + lv.trigger + '</b> · GRI ' + s.score + '</div>';
+        var acts = '<div class="acts">' + lv.act + '</div>';
         var ganzhi = gzForMonth(m);
-        openPop(em, nowYear + '年' + m + '月 · 行动指令', s.lv.nm + ' · ' + ganzhi, sig + acts, [], m);
+        openPop(lv.em, nowYear + '年' + m + '月 · 行动指令', lv.nm + ' · ' + ganzhi, sig + acts, [], m);
       });
     });
+
+    renderMonthTip(series);
+  }
+
+  /* 本月建议卡：对应当前月生成 GRI 建议，加在月度时机下方 */
+  function renderMonthTip(series) {
+    var box = document.getElementById('monthTipCard');
+    if (!box) return;
+    var now = new Date();
+    var m = now.getMonth() + 1;
+    var s = series.filter(function (x) { return x.m === m; })[0];
+    if (!s) return;
+    var lv = s.lv;
+    var gradeColor = lv.k === 'rich' ? 'gold' : lv.k === 'promo' ? 'blue' : lv.k === 'idea' ? 'violet' : lv.k === 'net' ? 'teal' : 'gray';
+    box.innerHTML =
+      '<div class="card">' +
+      '<div class="sec-label"><span>' + now.getFullYear() + '年' + m + '月 · 本月建议</span><span class="hint">GRI 月度时机引擎</span></div>' +
+      '<div class="mt-main">' +
+      '<span class="mt-emoji">' + lv.em + '</span>' +
+      '<div class="mt-info">' +
+      '<div class="mt-title">' + lv.nm + ' <em class="mt-word">专属词「' + lv.word + '」</em></div>' +
+      '<div class="mt-trigger">触发条件：' + lv.trigger + '</div>' +
+      '</div>' +
+      '<div class="mt-score ' + gradeColor + '">GRI <b>' + s.score + '</b></div>' +
+      '</div>' +
+      '<div class="mt-act">→ ' + lv.act + '</div>' +
+      '</div>';
   }
 
   function gzForMonth(m) {
